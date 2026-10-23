@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import DataTable from '@/components/admin/DataTable'
 import { Ticket, Search, Filter, Plus, X, CheckCircle, Clock, AlertCircle, Ban, User } from 'lucide-react'
+import notificationService from '@/shared/services/notificationService'
 
 const STATUS_CONFIG = {
   open: { label: 'Open', color: 'bg-blue-100 text-blue-800', icon: Clock },
@@ -41,9 +42,7 @@ export default function AdminTicketsPage() {
         .from('support_tickets')
         .select(`
           *,
-          user:users(id, email, full_name),
-          assigned_to_user:users!support_tickets_assigned_to_fkey(id, email, full_name),
-          responses:ticket_responses(id, user_id, is_admin, response, created_at, user:users(id, email, full_name))
+          user:users(id, email, full_name)
         `)
         .order('created_at', { ascending: false })
 
@@ -175,13 +174,9 @@ export default function AdminTicketsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 px-6 py-6">
+      <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-gray-900">Support Tickets</h1>
-        <Button onClick={() => {/* TODO: Create ticket as admin */ }} className="bg-black text-white hover:bg-gray-800">
-          <Plus className="w-4 h-4 mr-2" />
-          Create Ticket
-        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -241,14 +236,16 @@ export default function AdminTicketsPage() {
         </select>
       </div>
 
-      {/* DataTable */}
-      <DataTable
-        columns={columns}
-        data={tableData}
-        selectable
-        onRowClick={(row) => setSelectedTicket(tickets.find(t => t.id === row.id))}
-        emptyMessage="No tickets found"
-      />
+      {/* DataTable - Added proper padding */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={tableData}
+          selectable
+          onRowClick={(row) => setSelectedTicket(tickets.find(t => t.id === row.id))}
+          emptyMessage="No tickets found"
+        />
+      </div>
 
       {/* Ticket Detail Modal */}
       {selectedTicket && (

@@ -4,7 +4,8 @@ import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import DataTable from '@/components/admin/DataTable'
-import { Ticket, Search, Plus, X, CheckCircle, Clock, AlertCircle, Ban, MessageSquare } from 'lucide-react'
+import { Ticket, Search, Plus, X, CheckCircle, Clock, AlertCircle, Ban, MessageSquare, Bell } from 'lucide-react'
+import notificationService from '@/shared/services/notificationService'
 
 const STATUS_CONFIG = {
   open: { label: 'Open', color: 'bg-blue-100 text-blue-800', icon: Clock },
@@ -82,9 +83,13 @@ export default function ArtistTicketsPage() {
     }
     setSubmitting(true)
     try {
-      const { error } = await supabase
+      // Generate ticket number
+      const ticketNumber = `TKT-${Date.now().toString().slice(-6)}`
+
+      const { data, error } = await supabase
         .from('support_tickets')
         .insert({
+          ticket_number: ticketNumber,
           user_id: user?.id,
           subject: formData.subject,
           description: formData.description,
@@ -92,13 +97,48 @@ export default function ArtistTicketsPage() {
           priority: formData.priority,
           status: 'open',
         })
+        .select()
+        .single()
 
       if (error) throw error
+
+      // Create notification for user
+      await notificationService.createNotification({
+        userId: user.id,
+        type: 'ticket',
+        title: 'Ticket Submitted',
+        message: `Your ticket ${ticketNumber} has been submitted successfully`,
+        actionUrl: '/ArtistTickets',
+        metadata: { ticket_number: ticketNumber, ticket_id: data.id }
+      })
+
+      // Create notification for admin users
+      try {
+        const { data: adminUsers } = await supabase
+          .from('users')
+          .select('id')
+          .eq('role', 'admin')
+
+        if (adminUsers && adminUsers.length > 0) {
+          for (const admin of adminUsers) {
+            await notificationService.createNotification({
+              userId: admin.id,
+              type: 'ticket',
+              title: 'New Support Ticket',
+              message: `New ticket ${ticketNumber} submitted by ${user.full_name}`,
+              actionUrl: '/Admin/Tickets',
+              metadata: { ticket_number: ticketNumber, ticket_id: data.id, user_id: user.id }
+            })
+          }
+        }
+      } catch (notifErr) {
+        console.error('Error creating admin notification:', notifErr)
+      }
 
       setFormData({ subject: '', description: '', category: 'General', priority: 'medium' })
       setShowCreateModal(false)
       fetchTickets()
-      success('Created', 'Ticket created successfully')
+      success('Created', `Ticket ${ticketNumber} created successfully`)
     } catch (err) {
       console.error('Error creating ticket:', err)
       error('Failed', 'Failed to create ticket')
@@ -168,10 +208,10 @@ export default function ArtistTicketsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 px-6 py-6">
+      <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-gray-900">Support Tickets</h1>
-        <Button onClick={() => setShowCreateModal(true)} className="bg-black text-white hover:bg-gray-800">
+        <Button onClick={() => setShowCreateModal(true)} className="bg-black text-white hover:bg-gray-800 whitespace-nowrap">
           <Plus className="w-4 h-4 mr-2" />
           New Ticket
         </Button>
@@ -197,7 +237,7 @@ export default function ArtistTicketsPage() {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters - Search only, no redundant input */}
       <div className="flex gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -223,14 +263,16 @@ export default function ArtistTicketsPage() {
         </select>
       </div>
 
-      {/* DataTable */}
-      <DataTable
-        columns={columns}
-        data={tableData}
-        selectable
-        onRowClick={(row) => setSelectedTicket(tickets.find(t => t.id === row.id))}
-        emptyMessage="No tickets found"
-      />
+      {/* DataTable - Added proper padding */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={tableData}
+          selectable
+          onRowClick={(row) => setSelectedTicket(tickets.find(t => t.id === row.id))}
+          emptyMessage="No tickets found"
+        />
+      </div>
 
       {/* Ticket Detail Modal */}
       {selectedTicket && (

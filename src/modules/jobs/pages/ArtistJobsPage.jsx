@@ -10,14 +10,14 @@ export default function ArtistJobsPage() {
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
   const { success, error } = useToast()
-  
+
   const [activeTab, setActiveTab] = useState('jobboard') // jobboard, applications, invitations
   const [jobs, setJobs] = useState([])
   const [applications, setApplications] = useState([])
   const [invitations, setInvitations] = useState([])
   const [selectedJob, setSelectedJob] = useState(null)
   const [loading, setLoading] = useState(true)
-  
+
   // Filters
   const [filters, setFilters] = useState({
     role: 'all',
@@ -26,7 +26,7 @@ export default function ArtistJobsPage() {
     projectType: 'all',
     paid: 'all'
   })
-  
+
   const [searchQuery, setSearchQuery] = useState('')
   const [applicationFilter, setApplicationFilter] = useState('all') // all, withdrawn
 
@@ -39,8 +39,17 @@ export default function ArtistJobsPage() {
 
   useEffect(() => {
     if (!user) return
+    // Only load data when user is available, not on every tab change
+    if (jobs.length === 0 && applications.length === 0) {
+      loadData()
+    }
+  }, [user])
+
+  // Load data when tab changes
+  useEffect(() => {
+    if (!user) return
     loadData()
-  }, [user, activeTab])
+  }, [activeTab])
 
   const loadData = async () => {
     setLoading(true)
@@ -63,11 +72,11 @@ export default function ArtistJobsPage() {
     try {
       const allJobs = await Job.filter({ status: 'open' })
       const allProjects = await Project.filter({ status: 'verified' })
-      
+
       // Get user's applications
       const userApplications = await Application.filter({ user_id: user.id })
       const appliedJobIds = userApplications.map(app => app.job_id)
-      
+
       // Combine jobs and projects
       const combined = [
         ...allJobs.map(job => ({
@@ -103,7 +112,7 @@ export default function ArtistJobsPage() {
           has_applied: appliedJobIds.includes(project.id)
         }))
       ]
-      
+
       setJobs(combined)
       if (combined.length > 0) setSelectedJob(combined[0])
     } catch (err) {
@@ -114,7 +123,7 @@ export default function ArtistJobsPage() {
   const fetchApplications = async () => {
     try {
       const userApplications = await Application.filter({ user_id: user.id })
-      
+
       const enriched = await Promise.all(
         userApplications.map(async (app) => {
           let jobData = null
@@ -123,7 +132,7 @@ export default function ArtistJobsPage() {
           } else if (app.project_id) {
             jobData = await Project.get(app.project_id)
           }
-          
+
           return {
             ...app,
             job: jobData ? {
@@ -136,7 +145,7 @@ export default function ArtistJobsPage() {
           }
         })
       )
-      
+
       setApplications(enriched.filter(app => app.job))
     } catch (err) {
       console.error('Error fetching applications:', err)
@@ -154,7 +163,7 @@ export default function ArtistJobsPage() {
 
   const handleApply = async () => {
     if (!selectedJob) return
-    
+
     try {
       await Application.create({
         job_id: selectedJob.type === 'job' ? selectedJob.id : null,
@@ -164,11 +173,11 @@ export default function ArtistJobsPage() {
         cover_letter: '',
         media_urls: []
       })
-      
+
       success('Applied', 'Your application has been submitted successfully')
-      
+
       // Update the job's has_applied status
-      setJobs(prev => prev.map(job => 
+      setJobs(prev => prev.map(job =>
         job.id === selectedJob.id ? { ...job, has_applied: true } : job
       ))
       setSelectedJob(prev => ({ ...prev, has_applied: true }))
@@ -179,7 +188,7 @@ export default function ArtistJobsPage() {
 
   const handleWithdraw = async (applicationId) => {
     if (!window.confirm('Are you sure you want to withdraw this application?')) return
-    
+
     try {
       await Application.update(applicationId, { status: 'withdrawn' })
       success('Withdrawn', 'Your application has been withdrawn')
@@ -246,31 +255,28 @@ export default function ArtistJobsPage() {
         <div className="flex gap-8">
           <button
             onClick={() => setActiveTab('jobboard')}
-            className={`py-4 px-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'jobboard' 
-                ? 'border-blue-600 text-blue-600' 
-                : 'border-transparent text-gray-600 hover:text-gray-900'
-            }`}
+            className={`py-4 px-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'jobboard'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
           >
             Job Board
           </button>
           <button
             onClick={() => setActiveTab('applications')}
-            className={`py-4 px-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'applications' 
-                ? 'border-blue-600 text-blue-600' 
-                : 'border-transparent text-gray-600 hover:text-gray-900'
-            }`}
+            className={`py-4 px-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'applications'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
           >
             Applications ({applications.length})
           </button>
           <button
             onClick={() => setActiveTab('invitations')}
-            className={`py-4 px-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'invitations' 
-                ? 'border-blue-600 text-blue-600' 
-                : 'border-transparent text-gray-600 hover:text-gray-900'
-            }`}
+            className={`py-4 px-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'invitations'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
           >
             Invitations ({invitations.length})
           </button>
@@ -283,7 +289,7 @@ export default function ArtistJobsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Side - Job List */}
             <div className="lg:col-span-1">
-              {/* Filters */}
+              {/* Filters - Moved below Job Board tab */}
               <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
                 <div className="flex items-center gap-2 mb-4">
                   <Filter className="w-4 h-4 text-gray-600" />
@@ -355,9 +361,8 @@ export default function ArtistJobsPage() {
                       <div
                         key={job.id}
                         onClick={() => setSelectedJob(job)}
-                        className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-                          selectedJob?.id === job.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
-                        }`}
+                        className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedJob?.id === job.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                          }`}
                       >
                         <div className="flex gap-3">
                           {job.image && (
@@ -502,21 +507,19 @@ export default function ArtistJobsPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setApplicationFilter('all')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                    applicationFilter === 'all' 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium ${applicationFilter === 'all'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
                   All ({applications.length})
                 </button>
                 <button
                   onClick={() => setApplicationFilter('withdrawn')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                    applicationFilter === 'withdrawn' 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium ${applicationFilter === 'withdrawn'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
                   Withdrawn ({applications.filter(a => a.status === 'withdrawn').length})
                 </button>
@@ -561,13 +564,12 @@ export default function ArtistJobsPage() {
                         <td className="px-6 py-4 text-sm text-gray-600">{app.job?.budget || 'Contact'}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{app.job?.location}</td>
                         <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            app.status === 'withdrawn' 
-                              ? 'bg-red-100 text-red-800' 
-                              : app.status === 'hired'
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${app.status === 'withdrawn'
+                            ? 'bg-red-100 text-red-800'
+                            : app.status === 'hired'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-blue-100 text-blue-800'
-                          }`}>
+                            }`}>
                             {app.status === 'withdrawn' ? 'Withdrawn' : app.status.charAt(0).toUpperCase() + app.status.slice(1)}
                           </span>
                         </td>
