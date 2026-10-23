@@ -122,12 +122,14 @@ export default function ChatWidget() {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  const getFileIcon = (file) => {
-    if (file.type.startsWith('image/')) return '📷'
-    if (file.type.startsWith('audio/')) return '🎤'
-    if (file.type.startsWith('video/')) return '🎬'
-    if (file.type === 'application/pdf') return '📄'
-    return '📎'
+  const getFilePreview = (file) => {
+    if (file.type.startsWith('image/')) {
+      return URL.createObjectURL(file)
+    }
+    if (file.type.startsWith('video/')) {
+      return URL.createObjectURL(file)
+    }
+    return null
   }
 
   const handleTabClick = (tab) => {
@@ -414,24 +416,38 @@ export default function ChatWidget() {
                     )}
                   </div>
                   {attachments.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {attachments.map((file, index) => (
-                        <div key={index} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
-                          <span className="text-lg">{getFileIcon(file)}</span>
-                          <span className="text-sm text-gray-700 max-w-[150px] truncate">
-                            {file.name}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {(file.size / (1024 * 1024)).toFixed(1)}MB
-                          </span>
-                          <button
-                            onClick={() => removeAttachment(index)}
-                            className="text-gray-500 hover:text-red-600"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
+                    <div className="space-y-2 mt-3">
+                      {attachments.map((file, index) => {
+                        const previewUrl = getFilePreview(file)
+                        return (
+                          <div key={index} className="relative bg-gray-100 rounded-lg p-2">
+                            {previewUrl && (
+                              <div className="mb-2">
+                                {file.type.startsWith('image/') && (
+                                  <img src={previewUrl} alt={file.name} className="max-w-full h-auto rounded max-h-32 object-cover" />
+                                )}
+                                {file.type.startsWith('video/') && (
+                                  <video src={previewUrl} controls className="max-w-full h-auto rounded max-h-32" />
+                                )}
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <span className="text-sm text-gray-700 truncate">{file.name}</span>
+                                <span className="text-xs text-gray-500 whitespace-nowrap">
+                                  {(file.size / (1024 * 1024)).toFixed(1)}MB
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => removeAttachment(index)}
+                                className="text-gray-500 hover:text-red-600"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
                 </div>
