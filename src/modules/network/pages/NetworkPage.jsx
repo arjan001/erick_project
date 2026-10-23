@@ -235,7 +235,7 @@ export default function NetworkPage() {
 
   const myConnections = people.filter(p => getConnectionStatus(p) === 'accepted' && filterPerson(p))
   const notConnected = people.filter(p => getConnectionStatus(p) === 'not_connected' && filterPerson(p))
-  const sentRequests = connections.filter(c => c.user_id === user.id && c.status === 'pending')
+  const pendingSentRequests = connections.filter(c => c.user_id === user.id && c.status === 'pending')
 
   const myskillSet = new Set([
     myProfile?.role,
