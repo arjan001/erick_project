@@ -462,7 +462,7 @@ export default function AdminAPISettingsPage() {
                       <li>Copy Client ID, Client Secret, and API Key here</li>
                     </ol>
                   </div>
-                </div>
+                </form>
               )}
             </div>
           </div>
@@ -549,7 +549,7 @@ export default function AdminAPISettingsPage() {
                       <li>Content suggestions and optimization</li>
                     </ul>
                   </div>
-                </div>
+                </form>
               )}
             </div>
           </div>
@@ -702,7 +702,7 @@ export default function AdminAPISettingsPage() {
       </div>
     </div>
 
-      {
+    {
     showAddKeyModal && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-md">
