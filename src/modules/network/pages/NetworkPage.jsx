@@ -37,6 +37,7 @@ export default function NetworkPage() {
   const [people, setPeople] = useState([])
   const [connections, setConnections] = useState([])
   const [pendingRequests, setPendingRequests] = useState([])
+  const [sentRequests, setSentRequests] = useState([])
 
   const [showConnectionModal, setShowConnectionModal] = useState(false)
   const [selectedPerson, setSelectedPerson] = useState(null)

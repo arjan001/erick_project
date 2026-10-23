@@ -206,9 +206,7 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
               className={`w-full p-4 rounded-xl border-2 transition-all ${paymentMethod === 'mpesa' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <span className="text-green-600 font-bold text-lg">M</span>
-                </div>
+                <img src="/mpesa2.jpg" alt="M-Pesa" className="w-12 h-12 object-contain" />
                 <div className="text-left">
                   <div className="font-semibold text-gray-900">M-Pesa</div>
                   <div className="text-sm text-gray-500">Pay via mobile money</div>
@@ -221,12 +219,10 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
               className={`w-full p-4 rounded-xl border-2 transition-all ${paymentMethod === 'card' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <CreditCard className="w-6 h-6 text-gray-600" />
-                </div>
+                <img src="/visa-and-mastercard-logo-featuring-overlapping-circles-on-a-white-background-free-vector.jpg" alt="Card Payment" className="w-12 h-12 object-contain" />
                 <div className="text-left">
                   <div className="font-semibold text-gray-900">Card Payment</div>
-                  <div className="text-sm text-gray-500">Visa, Mastercard, Amex</div>
+                  <div className="text-sm text-gray-500">Visa, Mastercard</div>
                 </div>
               </div>
             </button>
@@ -268,27 +264,9 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
               <form onSubmit={handleCardSubmit} className="space-y-4">
                 <h3 className="font-semibold text-gray-900 mb-4">Card Payment</h3>
 
-                {/* Card logos with SVG */}
+                {/* Card logos */}
                 <div className="flex gap-3 mb-4">
-                  <div className="flex items-center justify-center px-4 py-2 bg-gray-100 rounded-none border border-gray-300">
-                    <svg width="50" height="32" viewBox="0 0 50 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="50" height="32" rx="2" fill="#1A1F71" />
-                      <text x="25" y="20" fill="white" fontSize="10" fontWeight="bold" textAnchor="middle">VISA</text>
-                    </svg>
-                  </div>
-                  <div className="flex items-center justify-center px-4 py-2 bg-gray-100 rounded-none border border-gray-300">
-                    <svg width="50" height="32" viewBox="0 0 50 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="50" height="32" rx="2" fill="#EB001B" />
-                      <circle cx="20" cy="16" r="10" fill="#F79E1B" />
-                      <circle cx="30" cy="16" r="10" fill="#FF5F00" />
-                    </svg>
-                  </div>
-                  <div className="flex items-center justify-center px-4 py-2 bg-gray-100 rounded-none border border-gray-300">
-                    <svg width="50" height="32" viewBox="0 0 50 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="50" height="32" rx="2" fill="#006FCF" />
-                      <text x="25" y="20" fill="white" fontSize="10" fontWeight="bold" textAnchor="middle">AMEX</text>
-                    </svg>
-                  </div>
+                  <img src="/visa-and-mastercard-logo-featuring-overlapping-circles-on-a-white-background-free-vector.jpg" alt="Card Payment" className="h-10 object-contain" />
                 </div>
 
                 <div>
