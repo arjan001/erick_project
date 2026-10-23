@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Users, Shield, Settings, Search, HardDrive, Mail, Lock, Key, CreditCard, DollarSign, Activity, ChevronLeft, ChevronRight, LogOut, Briefcase, FolderKanban, Building, MessageSquare, Package, ShoppingCart, Store, Radio, LayoutGrid, BarChart3, Bell, X, Wrench, Database, Send } from 'lucide-react'
+import { LayoutDashboard, Users, Shield, Settings, Search, HardDrive, Mail, Lock, Key, CreditCard, DollarSign, Activity, ChevronLeft, ChevronRight, LogOut, Briefcase, FolderKanban, Building, MessageSquare, Package, ShoppingCart, Store, Radio, LayoutGrid, BarChart3, Bell, X, Wrench, Database, Send, Ticket } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { useSidebar } from '@/layouts/DashboardLayout'
 import { Message, Notification } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 
 export default function AdminSidebar() {
   const navigate = useNavigate()
@@ -12,6 +13,7 @@ export default function AdminSidebar() {
   const { mobileSidebarOpen, setMobileSidebarOpen } = useSidebar()
   const [unreadMessageCount, setUnreadMessageCount] = useState(0)
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0)
+  const [ticketCount, setTicketCount] = useState(0)
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   useEffect(() => {
@@ -38,8 +40,26 @@ export default function AdminSidebar() {
       }
     }
 
+    const fetchTicketCount = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('support_tickets')
+          .select('id')
+          .in('status', ['open', 'in_progress'])
+
+        if (!error && data) {
+          setTicketCount(data.length)
+        } else {
+          setTicketCount(0)
+        }
+      } catch {
+        setTicketCount(0)
+      }
+    }
+
     fetchUnreadMessages()
     fetchUnreadNotifications()
+    fetchTicketCount()
 
       (async () => {
         // TODO: Refactor to use conversation_id and sender_id instead of recipient_email
@@ -92,6 +112,7 @@ export default function AdminSidebar() {
       items: [
         { path: '/Admin/Messages', label: 'Messages', icon: MessageSquare, showBadge: true },
         { path: '/Admin/Notifications', label: 'Notifications', icon: Bell, showNotificationBadge: true },
+        { path: '/Admin/Tickets', label: 'Support Tickets', icon: Ticket, showTicketBadge: true },
       ]
     },
     {
@@ -209,6 +230,11 @@ export default function AdminSidebar() {
                       {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
                     </span>
                   )}
+                  {!isCollapsed && item.showTicketBadge && ticketCount > 0 && (
+                    <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                      {ticketCount > 9 ? '9+' : ticketCount}
+                    </span>
+                  )}
                   {isCollapsed && item.showBadge && unreadMessageCount > 0 && (
                     <span className="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                       {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
@@ -217,6 +243,11 @@ export default function AdminSidebar() {
                   {isCollapsed && item.showNotificationBadge && unreadNotificationCount > 0 && (
                     <span className="absolute top-1 right-1 bg-orange-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                       {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                    </span>
+                  )}
+                  {isCollapsed && item.showTicketBadge && ticketCount > 0 && (
+                    <span className="absolute top-1 right-1 bg-orange-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {ticketCount > 9 ? '9+' : ticketCount}
                     </span>
                   )}
                 </button>

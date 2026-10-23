@@ -45,7 +45,7 @@ export default function ArtistTicketsPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
-    subject: '',
+    title: '',
     description: '',
     category: 'General',
     priority: 'medium',
@@ -56,11 +56,7 @@ export default function ArtistTicketsPage() {
       setLoading(true)
       const { data, error: err } = await supabase
         .from('support_tickets')
-        .select(`
-          *,
-          assigned_to_user:users!support_tickets_assigned_to_fkey(id, email, full_name),
-          responses:ticket_responses(id, user_id, is_admin, response, created_at, user:users(id, email, full_name))
-        `)
+        .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false })
 
@@ -77,7 +73,7 @@ export default function ArtistTicketsPage() {
   useEffect(() => { fetchTickets() }, [user])
 
   const handleCreateTicket = async () => {
-    if (!formData.subject.trim() || !formData.description.trim()) {
+    if (!formData.title.trim() || !formData.description.trim()) {
       error('Error', 'Please fill in all required fields')
       return
     }
@@ -91,7 +87,7 @@ export default function ArtistTicketsPage() {
         .insert({
           ticket_number: ticketNumber,
           user_id: user?.id,
-          subject: formData.subject,
+          title: formData.title,
           description: formData.description,
           category: formData.category,
           priority: formData.priority,
@@ -135,7 +131,7 @@ export default function ArtistTicketsPage() {
         console.error('Error creating admin notification:', notifErr)
       }
 
-      setFormData({ subject: '', description: '', category: 'General', priority: 'medium' })
+      setFormData({ title: '', description: '', category: 'General', priority: 'medium' })
       setShowCreateModal(false)
       fetchTickets()
       success('Created', `Ticket ${ticketNumber} created successfully`)
@@ -166,7 +162,7 @@ export default function ArtistTicketsPage() {
   }
 
   const filteredTickets = tickets.filter(t => {
-    const matchesSearch = t.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = t.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.ticket_number?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter
     return matchesSearch && matchesStatus
@@ -174,7 +170,7 @@ export default function ArtistTicketsPage() {
 
   const columns = [
     { key: 'ticket_number', label: 'Ticket #', sortable: true },
-    { key: 'subject', label: 'Subject', sortable: true },
+    { key: 'title', label: 'Subject', sortable: true },
     { key: 'category', label: 'Category', sortable: true },
     { key: 'priority', label: 'Priority', sortable: true },
     { key: 'status', label: 'Status', sortable: true },
@@ -184,7 +180,7 @@ export default function ArtistTicketsPage() {
   const tableData = filteredTickets.map(t => ({
     id: t.id,
     ticket_number: t.ticket_number,
-    subject: t.subject,
+    title: t.title,
     category: t.category,
     priority: (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${PRIORITY_CONFIG[t.priority]?.color || 'bg-gray-100'}`}>
@@ -281,7 +277,7 @@ export default function ArtistTicketsPage() {
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-gray-900">{selectedTicket.ticket_number}</h2>
-                <div className="text-sm text-gray-500">{selectedTicket.subject}</div>
+                <div className="text-sm text-gray-500">{selectedTicket.title}</div>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setSelectedTicket(null)}>
                 <X className="w-4 h-4" />
@@ -376,8 +372,8 @@ export default function ArtistTicketsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
                 <input
                   type="text"
-                  value={formData.subject}
-                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                   placeholder="Brief description of your issue"
                 />

@@ -42,7 +42,7 @@ export default function AdminTicketsPage() {
         .from('support_tickets')
         .select(`
           *,
-          user:users(id, email, full_name)
+          user:users!support_tickets_user_id_fkey(id, email, full_name)
         `)
         .order('created_at', { ascending: false })
 
@@ -128,7 +128,7 @@ export default function AdminTicketsPage() {
   }
 
   const filteredTickets = tickets.filter(t => {
-    const matchesSearch = t.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = t.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.ticket_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.user?.email?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter
@@ -138,7 +138,7 @@ export default function AdminTicketsPage() {
 
   const columns = [
     { key: 'ticket_number', label: 'Ticket #', sortable: true },
-    { key: 'subject', label: 'Subject', sortable: true },
+    { key: 'title', label: 'Subject', sortable: true },
     { key: 'user_email', label: 'User', sortable: true },
     { key: 'category', label: 'Category', sortable: true },
     { key: 'priority', label: 'Priority', sortable: true },
@@ -149,7 +149,7 @@ export default function AdminTicketsPage() {
   const tableData = filteredTickets.map(t => ({
     id: t.id,
     ticket_number: t.ticket_number,
-    subject: t.subject,
+    title: t.title,
     user_email: t.user?.email || 'Unknown',
     category: t.category,
     priority: (
@@ -254,7 +254,7 @@ export default function AdminTicketsPage() {
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-gray-900">{selectedTicket.ticket_number}</h2>
-                <div className="text-sm text-gray-500">{selectedTicket.subject}</div>
+                <div className="text-sm text-gray-500">{selectedTicket.title}</div>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setSelectedTicket(null)}>
                 <X className="w-4 h-4" />

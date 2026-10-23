@@ -183,6 +183,29 @@ export default function CheckoutPage() {
                   metadata: { order_number: order.order_number, amount: totals.total }
                 })
 
+                // Create notification for admin users about new order
+                try {
+                  const { data: adminUsers } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('role', 'admin')
+
+                  if (adminUsers && adminUsers.length > 0) {
+                    for (const admin of adminUsers) {
+                      await notificationService.createNotification({
+                        userId: admin.id,
+                        type: 'order',
+                        title: 'New Order Received',
+                        message: `New order ${order.order_number} from ${customer.email}. Total: ${formatKES(totals.total)}`,
+                        actionUrl: '/Admin/Orders',
+                        metadata: { order_number: order.order_number, user_id: user.id, amount: totals.total }
+                      })
+                    }
+                  }
+                } catch (notifErr) {
+                  console.error('Error creating admin notification:', notifErr)
+                }
+
                 showNotification(`Your order ${order.order_number} has been paid successfully.`)
               } else if (status.status === 'failed' || status.status === 'cancelled') {
                 clearInterval(pollInterval)

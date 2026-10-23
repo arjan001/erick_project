@@ -5,6 +5,7 @@ import { createPageUrl } from '@/shared/utils/routing'
 import { useSidebar } from '@/layouts/DashboardLayout'
 import { useAuth } from '@/lib/AuthContext'
 import { Message, Notification } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 
 const MENU_ITEMS = [
   { label: 'My Projects', icon: Briefcase, href: 'ClientDashboard' },
@@ -13,7 +14,7 @@ const MENU_ITEMS = [
   { label: 'Messages', icon: Mail, href: 'ClientMessages', showBadge: true },
   { label: 'Network', icon: Share2, href: '/Network', showConnectionBadge: true },
   { label: 'Notifications', icon: Bell, href: 'ClientNotifications', showNotificationBadge: true },
-  { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets' },
+  { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets', showTicketBadge: true },
   { label: 'Analytics', icon: BarChart3, href: 'ClientAnalytics' },
   { label: 'Profile & Settings', icon: Settings, href: 'ClientProfile' }
 ]
@@ -24,6 +25,7 @@ export default function ClientSidebar() {
   const [pendingConnections, setPendingConnections] = useState(0)
   const [unreadMessageCount, setUnreadMessageCount] = useState(0)
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0)
+  const [ticketCount, setTicketCount] = useState(0)
   const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar()
   const { logout } = useAuth()
 
@@ -50,8 +52,27 @@ export default function ClientSidebar() {
       }
     }
 
+    const fetchTicketCount = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('support_tickets')
+          .select('id')
+          .eq('user_id', authUser.id)
+          .in('status', ['open', 'in_progress'])
+
+        if (!error && data) {
+          setTicketCount(data.length)
+        } else {
+          setTicketCount(0)
+        }
+      } catch {
+        setTicketCount(0)
+      }
+    }
+
     fetchUnreadMessages()
     fetchUnreadNotifications()
+    fetchTicketCount()
 
     // Skip realtime subscriptions for now
     return () => unsubscribe && unsubscribe()
@@ -136,6 +157,11 @@ export default function ClientSidebar() {
                       {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
                     </span>
                   )}
+                  {item.showTicketBadge && ticketCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                      {ticketCount > 9 ? '9+' : ticketCount}
+                    </span>
+                  )}
                 </Link>
                 {/* Tooltip */}
                 <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-[#1a1a1a] text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
@@ -168,6 +194,11 @@ export default function ClientSidebar() {
               {item.showNotificationBadge && unreadNotificationCount > 0 && (
                 <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
                   {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                </span>
+              )}
+              {item.showTicketBadge && ticketCount > 0 && (
+                <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                  {ticketCount > 9 ? '9+' : ticketCount}
                 </span>
               )}
             </Link>
