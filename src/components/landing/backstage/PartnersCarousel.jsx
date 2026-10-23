@@ -48,18 +48,18 @@ export default function PartnersCarousel({ tone = 'light', fade = '#F5F3EF' }) {
       />
 
       <div
-        className="flex w-max animate-[scroll_30s_linear_infinite] items-center gap-12"
+        className="flex w-max animate-[scroll_30s_linear_infinite] items-center gap-16"
         style={{ animationPlayState: paused ? 'paused' : 'running' }}
       >
         {allPartners.map((partner, i) => (
           <div
             key={`${partner.id}-${i}`}
-            className="flex h-16 min-w-[160px] items-center justify-center px-8"
+            className="flex h-24 min-w-[200px] items-center justify-center px-10"
           >
             <img
               src={partner.logo_url}
               alt={partner.name}
-              className="h-10 w-auto max-w-[160px] object-contain opacity-40 grayscale"
+              className="h-16 w-auto max-w-[200px] object-contain opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300"
             />
           </div>
         ))}

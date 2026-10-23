@@ -3,11 +3,11 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
-import { MessageSquare, Search, Send, Trash2, User, Plus, X, Mic, Paperclip } from 'lucide-react'
+import { MessageSquare, Search, Send, Trash2, User, Plus, X, Paperclip, Clock, CheckCircle2 } from 'lucide-react'
 
 export default function AdminMessagesPage() {
   const { user } = useAuth()
-  const { success, error } = useToast()
+  const { error } = useToast()
   const [loading, setLoading] = useState(true)
   const [conversations, setConversations] = useState([])
   const [allUsers, setAllUsers] = useState([])
@@ -18,11 +18,8 @@ export default function AdminMessagesPage() {
   const [showNewConversation, setShowNewConversation] = useState(false)
   const [userSearchQuery, setUserSearchQuery] = useState('')
   const [attachments, setAttachments] = useState([])
-  const [isRecording, setIsRecording] = useState(false)
-  const [recordingTime, setRecordingTime] = useState(0)
+  const [typingUsers, setTypingUsers] = useState(new Set())
   const fileInputRef = useRef(null)
-  const mediaRecorderRef = useRef(null)
-  const audioChunksRef = useRef([])
 
   const fetchMessages = async () => {
     try {
@@ -32,8 +29,8 @@ export default function AdminMessagesPage() {
         .from('conversations')
         .select(`
           *,
-          participant_1:users!conversations_participant_1_fkey(id, email, full_name),
-          participant_2:users!conversations_participant_2_fkey(id, email, full_name)
+          participant_1:users!conversations_participant_1_fkey(id, email, full_name, avatar_url, last_seen),
+          participant_2:users!conversations_participant_2_fkey(id, email, full_name, avatar_url, last_seen)
         `)
         .order('last_message_at', { ascending: false, nullsFirst: false })
 
@@ -60,7 +57,9 @@ export default function AdminMessagesPage() {
             lastMessageTime: lastMessage?.created_at || conv.created_at,
             participant: otherParticipant.email,
             participantName: otherParticipant.full_name,
-            participantId: otherParticipant.id
+            participantId: otherParticipant.id,
+            participantAvatar: otherParticipant.avatar_url,
+            participantLastSeen: otherParticipant.last_seen,
           }
         })
       )
@@ -78,8 +77,8 @@ export default function AdminMessagesPage() {
     try {
       const { data: users, error } = await supabase
         .from('users')
-        .select('id, email, full_name, role')
-        .neq('id', user?.id) // Exclude admin user themselves
+        .select('id, email, full_name, role, avatar_url, last_seen')
+        .neq('id', user?.id)
 
       if (error) throw error
       setAllUsers(users || [])
@@ -93,6 +92,21 @@ export default function AdminMessagesPage() {
     fetchAllUsers()
   }, [user])
 
+  // Real-time subscription for new messages
+  useEffect(() => {
+    const channel = supabase
+      .channel('messages-channel')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+        // Refresh conversations when new message arrives
+        fetchMessages()
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
+
   const selectedConversation = conversations.find(c => c.id === selectedId)
 
   const handleSendMessage = async () => {
@@ -100,13 +114,35 @@ export default function AdminMessagesPage() {
     if (!selectedConversation) return
     setSending(true)
     try {
-      // Upload attachments to Supabase Storage
+      // Sanitize message
+      const sanitizeInput = (input) => {
+        return input.replace(/<script[^>]*>.*?<\/script>/gi, '')
+          .replace(/<[^>]*>/g, '')
+          .trim()
+      }
+      const sanitizedMessage = sanitizeInput(newMessage)
+
+      // Upload attachments to Supabase Storage (only images)
       const attachmentUrls = []
       for (const file of attachments) {
-        const fileName = `${Date.now()}-${file.name}`
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        if (!file.type.startsWith('image/')) {
+          error('Error', 'Only image files are currently supported')
+          setSending(false)
+          return
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          error('Error', 'File size must be less than 5MB')
+          setSending(false)
+          return
+        }
+
+        const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+        const { error: uploadError } = await supabase.storage
           .from('message-attachments')
-          .upload(fileName, file)
+          .upload(fileName, file, {
+            contentType: file.type,
+            upsert: false
+          })
 
         if (uploadError) throw uploadError
 
@@ -122,12 +158,10 @@ export default function AdminMessagesPage() {
       }
 
       // Create message content with attachments
-      let messageContent = newMessage
+      let messageContent = sanitizedMessage
       if (attachmentUrls.length > 0) {
-        const attachmentText = attachmentUrls.map(a =>
-          `[${a.type.startsWith('audio') ? 'Audio' : 'File'}: ${a.url}]`
-        ).join('\n')
-        messageContent = newMessage ? `${newMessage}\n\n${attachmentText}` : attachmentText
+        const attachmentText = attachmentUrls.map(a => `[Image: ${a.url}]`).join('\n')
+        messageContent = sanitizedMessage ? `${sanitizedMessage}\n\n${attachmentText}` : attachmentText
       }
 
       const { data: newMsg, error: sendError } = await supabase
@@ -154,7 +188,7 @@ export default function AdminMessagesPage() {
       ))
       setNewMessage('')
       setAttachments([])
-      success('Sent', 'Message sent successfully')
+      // Success alert removed per user request
     } catch (err) {
       console.error('Error sending message:', err)
       error('Failed', 'Failed to send message')
@@ -171,7 +205,6 @@ export default function AdminMessagesPage() {
       await supabase.from('conversations').delete().eq('id', conversationId)
       setConversations(prev => prev.filter(c => c.id !== conversationId))
       if (selectedId === conversationId) setSelectedId(null)
-      success('Deleted', 'Conversation deleted successfully')
     } catch (err) {
       console.error('Error deleting conversation:', err)
       error('Failed', 'Failed to delete conversation')
@@ -180,7 +213,6 @@ export default function AdminMessagesPage() {
 
   const handleStartConversation = async (targetUserId) => {
     try {
-      // Check if conversation already exists
       const existing = conversations.find(c => c.participantId === targetUserId)
       if (existing) {
         setSelectedId(existing.id)
@@ -188,7 +220,6 @@ export default function AdminMessagesPage() {
         return
       }
 
-      // Create new conversation
       const { data: newConv, error: convError } = await supabase
         .from('conversations')
         .insert({
@@ -201,7 +232,6 @@ export default function AdminMessagesPage() {
 
       if (convError) throw convError
 
-      // Add to conversations list
       const targetUser = allUsers.find(u => u.id === targetUserId)
       setConversations(prev => [{
         id: newConv.id,
@@ -210,66 +240,16 @@ export default function AdminMessagesPage() {
         lastMessageTime: newConv.created_at,
         participant: targetUser.email,
         participantName: targetUser.full_name,
-        participantId: targetUser.id
+        participantId: targetUser.id,
+        participantAvatar: targetUser.avatar_url,
+        participantLastSeen: targetUser.last_seen,
       }, ...prev])
 
       setSelectedId(newConv.id)
       setShowNewConversation(false)
-      success('Started', 'Conversation started successfully')
     } catch (err) {
       console.error('Error starting conversation:', err)
       error('Failed', 'Failed to start conversation')
-    }
-  }
-
-  const filteredConversations = conversations.filter(c =>
-    c.participant?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.participantName?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  const filteredUsers = allUsers.filter(u =>
-    u.email?.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
-    u.full_name?.toLowerCase().includes(userSearchQuery.toLowerCase())
-  )
-
-  // Audio recording functions
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRecorderRef.current = new MediaRecorder(stream)
-      audioChunksRef.current = []
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data)
-      }
-
-      mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
-        const audioFile = new File([audioBlob], `voice-message-${Date.now()}.webm`, { type: 'audio/webm' })
-        setAttachments(prev => [...prev, audioFile])
-        stream.getTracks().forEach(track => track.stop())
-      }
-
-      mediaRecorderRef.current.start()
-      setIsRecording(true)
-      setRecordingTime(0)
-
-      const timer = setInterval(() => {
-        setRecordingTime(prev => prev + 1)
-      }, 1000)
-
-      mediaRecorderRef.current._timer = timer
-    } catch (err) {
-      console.error('Error starting recording:', err)
-      error('Error', 'Could not access microphone')
-    }
-  }
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop()
-      clearInterval(mediaRecorderRef.current._timer)
-      setIsRecording(false)
     }
   }
 
@@ -282,11 +262,27 @@ export default function AdminMessagesPage() {
     setAttachments(prev => prev.filter((_, i) => i !== index))
   }
 
-  const formatRecordingTime = (seconds) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
+  const getUserStatus = (lastSeen) => {
+    if (!lastSeen) return { text: 'Offline', color: 'bg-gray-400' }
+    const lastSeenDate = new Date(lastSeen)
+    const now = new Date()
+    const diffMinutes = (now - lastSeenDate) / (1000 * 60)
+
+    if (diffMinutes < 5) return { text: 'Active', color: 'bg-green-500' }
+    if (diffMinutes < 60) return { text: `${Math.floor(diffMinutes)}m ago`, color: 'bg-yellow-500' }
+    if (diffMinutes < 1440) return { text: `${Math.floor(diffMinutes / 60)}h ago`, color: 'bg-orange-500' }
+    return { text: lastSeenDate.toLocaleDateString(), color: 'bg-gray-400' }
   }
+
+  const filteredConversations = conversations.filter(c =>
+    c.participant?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.participantName?.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const filteredUsers = allUsers.filter(u =>
+    u.email?.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+    u.full_name?.toLowerCase().includes(userSearchQuery.toLowerCase())
+  )
 
   if (loading) {
     return (
@@ -330,12 +326,19 @@ export default function AdminMessagesPage() {
               className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 ${selectedId === conversation.id ? 'bg-gray-100' : ''}`}
             >
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-5 h-5 text-gray-600" />
+                <div className="relative">
+                  {conversation.participantAvatar ? (
+                    <img src={conversation.participantAvatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-gray-600" />
+                    </div>
+                  )}
+                  <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${getUserStatus(conversation.participantLastSeen).color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <div className="font-medium text-gray-900 truncate">{conversation.participant}</div>
+                    <div className="font-medium text-sm text-gray-900 truncate">{conversation.participantName || conversation.participant}</div>
                     <div className="text-xs text-gray-500">{new Date(conversation.lastMessageTime).toLocaleDateString()}</div>
                   </div>
                   <div className="text-sm text-gray-600 truncate mt-1">{conversation.lastMessage}</div>
@@ -351,10 +354,25 @@ export default function AdminMessagesPage() {
           <>
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-gray-600" />
+                <div className="relative">
+                  {selectedConversation.participantAvatar ? (
+                    <img src={selectedConversation.participantAvatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-gray-600" />
+                    </div>
+                  )}
+                  <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${getUserStatus(selectedConversation.participantLastSeen).color}`} />
                 </div>
-                <div className="font-medium text-gray-900">{selectedConversation.participant}</div>
+                <div>
+                  <div className="font-medium text-sm text-gray-900">{selectedConversation.participantName || selectedConversation.participant}</div>
+                  <div className="text-xs text-gray-500 flex items-center gap-1">
+                    {getUserStatus(selectedConversation.participantLastSeen).text}
+                    {typingUsers.has(selectedConversation.participantId) && (
+                      <span className="text-green-600">• typing...</span>
+                    )}
+                  </div>
+                </div>
               </div>
               <Button variant="ghost" size="sm" onClick={() => handleDeleteConversation(selectedConversation.id)}>
                 <Trash2 className="w-4 h-4 text-red-600" />
@@ -363,7 +381,6 @@ export default function AdminMessagesPage() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {selectedConversation.messages.map(msg => {
-                // Parse attachments from content
                 const contentLines = msg.content.split('\n')
                 const textContent = contentLines.filter(line => !line.startsWith('[') || !line.includes(']')).join('\n')
                 const attachmentLines = contentLines.filter(line => line.startsWith('[') && line.includes(']'))
@@ -375,17 +392,10 @@ export default function AdminMessagesPage() {
                       {attachmentLines.length > 0 && (
                         <div className="mt-2 space-y-2">
                           {attachmentLines.map((line, idx) => {
-                            const match = line.match(/\[(Audio|File|Image|Video): (.+)\]/)
+                            const match = line.match(/\[(Image|Audio|File|Video): (.+)\]/)
                             if (match) {
                               const [, type, url] = match
-                              if (type === 'Audio') {
-                                return (
-                                  <audio key={idx} controls className="w-full max-w-xs">
-                                    <source src={url} type="audio/webm" />
-                                    Your browser does not support audio.
-                                  </audio>
-                                )
-                              } else if (type === 'Image') {
+                              if (type === 'Image') {
                                 return (
                                   <img key={idx} src={url} alt="Attachment" className="max-w-full h-auto rounded" />
                                 )
@@ -412,18 +422,12 @@ export default function AdminMessagesPage() {
             </div>
 
             <div className="p-4 border-t border-gray-200">
-              {/* Attachments preview */}
               {attachments.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {attachments.map((file, index) => (
                     <div key={index} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
-                      <span className="text-sm text-gray-700 max-w-[200px] truncate">
-                        {file.name}
-                      </span>
-                      <button
-                        onClick={() => removeAttachment(index)}
-                        className="text-gray-500 hover:text-red-600"
-                      >
+                      <span className="text-sm text-gray-700 max-w-[200px] truncate">{file.name}</span>
+                      <button onClick={() => removeAttachment(index)} className="text-gray-500 hover:text-red-600">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -448,7 +452,7 @@ export default function AdminMessagesPage() {
                   multiple
                   onChange={handleFileSelect}
                   className="hidden"
-                  accept="image/*,audio/*,video/*,.pdf,.doc,.docx"
+                  accept="image/*"
                 />
                 <Button
                   variant="ghost"
@@ -458,20 +462,8 @@ export default function AdminMessagesPage() {
                 >
                   <Paperclip className="w-5 h-5" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={isRecording ? stopRecording : startRecording}
-                  className={isRecording ? "text-red-600 hover:text-red-700" : "text-gray-600 hover:text-gray-900"}
-                >
-                  {isRecording ? (
-                    <span className="text-sm font-mono">{formatRecordingTime(recordingTime)}</span>
-                  ) : (
-                    <Mic className="w-5 h-5" />
-                  )}
-                </Button>
                 <Button onClick={handleSendMessage} disabled={sending} className="bg-black text-white hover:bg-gray-800">
-                  <Send className="w-4 h-4" />
+                  {sending ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="w-4 h-4" />}
                 </Button>
               </div>
             </div>
@@ -518,11 +510,18 @@ export default function AdminMessagesPage() {
                     onClick={() => handleStartConversation(u.id)}
                     className="w-full text-left p-3 rounded-lg hover:bg-gray-100 flex items-center gap-3"
                   >
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                      <User className="w-5 h-5 text-gray-600" />
+                    <div className="relative">
+                      {u.avatar_url ? (
+                        <img src={u.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-gray-600" />
+                        </div>
+                      )}
+                      <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${getUserStatus(u.last_seen).color}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 truncate">{u.full_name || 'Unknown'}</div>
+                      <div className="font-medium text-sm text-gray-900 truncate">{u.full_name || 'Unknown'}</div>
                       <div className="text-sm text-gray-500 truncate">{u.email}</div>
                       <div className="text-xs text-gray-400">{u.role}</div>
                     </div>

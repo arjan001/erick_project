@@ -162,7 +162,7 @@ export default function AdminMailingListPage() {
       </div>
 
       <Card>
-        <CardContent className="p-0">
+        <CardContent className="p-6">
           <DataTable
             data={subscribers}
             columns={columns}
