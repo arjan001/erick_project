@@ -7,6 +7,7 @@ import { CheckCircle2, Loader2, ShoppingBag, Smartphone, CreditCard, XCircle } f
 import { getCart, clearCart, createOrder, getShopSettings, calcTotals, recordCardAttempt } from '@/services/shopService'
 import { useShop } from '@/contexts/ShopContext'
 import { initiateMakamescoSTKPush, checkMakamescoStatus } from '@/services/makamescoService'
+import notificationService from '@/shared/services/notificationService'
 
 const inputCls =
   'w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-black placeholder:text-black/35 focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20'
@@ -171,6 +172,17 @@ export default function CheckoutPage() {
                 setPhase('done')
                 // Only clear cart after successful payment
                 clear()
+
+                // Create notification for user
+                await notificationService.createNotification({
+                  userId: user.id,
+                  type: 'payment',
+                  title: 'Order Payment Successful',
+                  message: `Your order ${order.order_number} has been paid successfully. Total: ${formatKES(totals.total)}`,
+                  actionUrl: '/Shop',
+                  metadata: { order_number: order.order_number, amount: totals.total }
+                })
+
                 showNotification(`Your order ${order.order_number} has been paid successfully.`)
               } else if (status.status === 'failed' || status.status === 'cancelled') {
                 clearInterval(pollInterval)
@@ -352,20 +364,10 @@ export default function CheckoutPage() {
 
               <div className="mt-4 flex items-center gap-4">
                 {settings.enableMpesa && method === 'mpesa' && (
-                  <div className="flex items-center gap-2 rounded-lg bg-green-50 px-4 py-2">
-                    <div className="text-green-600 font-bold text-lg">LIPA NA</div>
-                    <div className="text-green-600 font-bold text-xl">m-pesa</div>
-                  </div>
+                  <img src="/mpesa2.jpg" alt="M-Pesa" className="h-12 object-contain" />
                 )}
                 {settings.enableCard && method === 'card' && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      <div className="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center">
-                        <div className="h-4 w-4 rounded-full bg-orange-500 -ml-2"></div>
-                      </div>
-                      <span className="text-blue-600 font-bold text-lg">VISA</span>
-                    </div>
-                  </div>
+                  <img src="/visa-and-mastercard-logo-featuring-overlapping-circles-on-a-white-background-free-vector.jpg" alt="Visa Mastercard" className="h-12 object-contain" />
                 )}
               </div>
 
