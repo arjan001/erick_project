@@ -50,15 +50,30 @@ export default function AdminMessagesPage() {
           if (msgError) throw msgError
 
           const lastMessage = msgs[msgs.length - 1]
-          const otherParticipant = conv.participant_1.id === user?.id ? conv.participant_2 : conv.participant_1
+          const otherParticipant = conv.participant_1?.id === user?.id ? conv.participant_2 : conv.participant_1
+
+          // Handle null participant
+          if (!otherParticipant) {
+            return {
+              id: conv.id,
+              messages: msgs || [],
+              lastMessage: lastMessage?.content || '',
+              lastMessageTime: lastMessage?.created_at || conv.created_at,
+              participant: 'Unknown',
+              participantName: 'Unknown User',
+              participantId: null,
+              participantAvatar: null,
+              participantLastSeen: null,
+            }
+          }
 
           return {
             id: conv.id,
             messages: msgs || [],
             lastMessage: lastMessage?.content || '',
             lastMessageTime: lastMessage?.created_at || conv.created_at,
-            participant: otherParticipant.email,
-            participantName: otherParticipant.full_name,
+            participant: otherParticipant.email || 'Unknown',
+            participantName: otherParticipant.full_name || 'Unknown',
             participantId: otherParticipant.id,
             participantAvatar: otherParticipant.avatar_url,
             participantLastSeen: otherParticipant.last_seen,

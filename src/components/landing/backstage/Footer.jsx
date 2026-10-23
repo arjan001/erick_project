@@ -33,7 +33,7 @@ const columns = [
       { label: 'About', to: '/About' },
       { label: 'Blog', to: '/Blog' },
       { label: 'Careers', to: '/Careers' },
-      { label: 'Partners', to: '#' },
+      { label: 'Partners', to: '/Partners' },
       { label: 'Privacy Policy', to: '/legal/privacy' },
       { label: 'Terms of Service', to: '/legal/terms' },
       { label: 'Cookie Policy', to: '/legal/cookies' },

@@ -188,22 +188,21 @@ export default function BlogListingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {castingCalls.map((article, idx) => (
               <div key={article.id} className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                {article.cover_image && (
-                  <div className="aspect-video bg-gray-100">
-                    <img
-                      src={article.cover_image}
-                      alt={article.title}
-                      className="w-full h-full object-cover"
-                    />
+                <Link to={`/Blog/${article.slug}`} className="block">
+                  {article.cover_image && (
+                    <div className="aspect-video bg-gray-100">
+                      <img
+                        src={article.cover_image}
+                        alt={article.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  <div className="p-5">
+                    <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">{article.title}</h3>
+                    <p className="text-gray-600 text-sm line-clamp-2">{article.excerpt}</p>
                   </div>
-                )}
-                <div className="p-5">
-                  <h3 className="font-bold text-gray-900 mb-2 line-clamp-2">{article.title}</h3>
-                  <p className="text-gray-600 text-sm line-clamp-2 mb-4">{article.excerpt}</p>
-                  <button className="w-full bg-black text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors">
-                    View Details
-                  </button>
-                </div>
+                </Link>
               </div>
             ))}
           </div>
