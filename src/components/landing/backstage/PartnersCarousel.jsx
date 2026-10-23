@@ -1,12 +1,27 @@
 import React, { useState, useEffect } from 'react'
-import { listPartnerLogos } from '@/services/partnerLogoService'
+import { supabase } from '@/lib/supabase'
 
 export default function PartnersCarousel({ tone = 'light', fade = '#F5F3EF' }) {
   const [partners, setPartners] = useState([])
   const [paused, setPaused] = useState(false)
 
   useEffect(() => {
-    listPartnerLogos().then(setPartners).catch(() => setPartners([]))
+    const fetchPartners = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('partners')
+          .select('*')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        setPartners(data || [])
+      } catch (err) {
+        console.error('Error fetching partners:', err)
+        setPartners([])
+      }
+    }
+    fetchPartners()
   }, [])
 
   if (partners.length === 0) {

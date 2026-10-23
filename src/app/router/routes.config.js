@@ -62,6 +62,7 @@ const FinanceDashboardGuard = createRoleGuard(['admin'])
 const JobsGuard = createRoleGuard(['admin'])
 const ClientsGuard = createRoleGuard(['admin'])
 const MessagesGuard = createRoleGuard(['admin'])
+const TicketsGuard = createRoleGuard(['admin'])
 const ProductsGuard = createRoleGuard(['admin'])
 const OrdersGuard = createRoleGuard(['admin'])
 const ShopSettingsGuard = createRoleGuard(['admin'])
@@ -515,6 +516,12 @@ const adminRoutes = [
     guard: MessagesGuard
   },
   {
+    path: '/Admin/Tickets',
+    component: () => import('@/modules/admin/pages/AdminTicketsPage'),
+    layout: AdminLayout,
+    guard: TicketsGuard
+  },
+  {
     path: '/Admin/Products',
     component: () => import('@/modules/admin/pages/AdminProductsPage'),
     layout: AdminLayout,
@@ -755,7 +762,7 @@ const artistRoutes = [
   },
   {
     path: '/SupportTickets',
-    component: () => import('@/modules/support/pages/SupportTicketsPage'),
+    component: () => import('@/modules/artist/pages/ArtistTicketsPage'),
     layout: DashboardLayout,
     guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   }
@@ -823,7 +830,7 @@ const clientRoutes = [
   },
   {
     path: '/SupportTickets',
-    component: () => import('@/modules/support/pages/SupportTicketsPage'),
+    component: () => import('@/modules/client/pages/ClientTicketsPage'),
     layout: DashboardLayout,
     guard: createRoleGuard(['admin', 'client', 'project_owner'])
   },
@@ -881,7 +888,7 @@ const teamRoutes = [
   },
   {
     path: '/SupportTickets',
-    component: () => import('@/modules/support/pages/SupportTicketsPage'),
+    component: () => import('@/modules/client/pages/ClientTicketsPage'),
     layout: DashboardLayout,
     guard: TeamGuard
   },
@@ -981,7 +988,7 @@ const backerRoutes = [
   },
   {
     path: '/SupportTickets',
-    component: () => import('@/modules/support/pages/SupportTicketsPage'),
+    component: () => import('@/modules/client/pages/ClientTicketsPage'),
     layout: DashboardLayout,
     guard: BackerGuard
   },
@@ -997,7 +1004,7 @@ const backerRoutes = [
 const protectedRoutes = [
   {
     path: '/SupportTickets',
-    component: () => import('@/modules/support/pages/SupportTicketsPage'),
+    component: () => import('@/modules/client/pages/ClientTicketsPage'),
     layout: DashboardLayout,
     guard: AuthGuard
   }

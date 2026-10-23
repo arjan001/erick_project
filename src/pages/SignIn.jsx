@@ -5,7 +5,6 @@ import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Artist, Team, Backer, Client, Subscription, SubscriptionPackage, User } from '@/lib/supabaseEntities'
 import { getPendingApplication, clearPendingApplication } from '@/services/savedJobsService'
-import { listPartnerLogos } from '@/services/partnerLogoService'
 import { resolveUsernameToEmail } from '@/services/usernameService'
 
 const GoogleIcon = () => (
@@ -77,7 +76,22 @@ export default function SignIn() {
   const [invitationToken, setInvitationToken] = useState(searchParams.get('invitation_token'))
 
   useEffect(() => {
-    listPartnerLogos().then(setPartnerLogos).catch(() => setPartnerLogos([]))
+    const fetchPartners = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('partners')
+          .select('*')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        setPartnerLogos(data || [])
+      } catch (err) {
+        console.error('Error fetching partners:', err)
+        setPartnerLogos([])
+      }
+    }
+    fetchPartners()
   }, [])
 
   useEffect(() => {
@@ -391,18 +405,20 @@ export default function SignIn() {
 
             {partnerLogos.length > 0 && (
               <div className="mt-14">
-                <p className="text-xs font-bold uppercase tracking-wider text-black/50">
+                <p className="text-xs font-bold uppercase tracking-wider text-black/50 mb-4">
                   Trusted by top studios and brands
                 </p>
-                <div className="mt-4 flex flex-wrap gap-6 items-center">
-                  {partnerLogos.map((l) => (
-                    <img
-                      key={l.id}
-                      src={l.logo_url}
-                      alt={l.name}
-                      className="h-8 w-auto max-w-[120px] object-contain opacity-40 grayscale"
-                    />
-                  ))}
+                <div className="relative overflow-hidden">
+                  <div className="flex animate-[scroll_20s_linear_infinite] gap-8 w-max">
+                    {[...partnerLogos, ...partnerLogos, ...partnerLogos].map((l, i) => (
+                      <img
+                        key={`${l.id}-${i}`}
+                        src={l.logo_url}
+                        alt={l.name}
+                        className="h-8 w-auto max-w-[120px] object-contain opacity-40 grayscale"
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

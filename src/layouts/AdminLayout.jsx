@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronLeft, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock, BarChart3, AlertTriangle, ShoppingBag, Upload, UserCheck } from 'lucide-react'
+import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronLeft, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock, BarChart3, AlertTriangle, ShoppingBag, Upload, UserCheck, Ticket } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 
 const navItems = [
@@ -25,6 +25,7 @@ const navItems = [
   { path: '/Admin/Newsletter', label: 'Newsletter', icon: Mail },
   { path: '/Admin/MailingList', label: 'Mailing List', icon: Mail },
   { path: '/Admin/Messages', label: 'Messages', icon: Mail },
+  { path: '/Admin/Tickets', label: 'Support Tickets', icon: Ticket },
   { path: '/Admin/CMS', label: 'CMS', icon: FileText },
   { path: '/Admin/SEOCMS', label: 'SEO & CMS', icon: FileText },
   { path: '/Admin/ImageStorage', label: 'Image Storage', icon: Image },
@@ -46,7 +47,7 @@ const navGroups = [
   { label: 'User Management', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
   { label: 'Content Management', items: ['/Admin/Clients', '/Admin/Artists', '/Admin/Teams', '/Admin/Backers', '/Admin/Jobs', '/Admin/FeaturedWork', '/Admin/Categories', '/Admin/Ticker', '/Admin/Articles'] },
   { label: 'Shop', items: ['/Admin/Products', '/Admin/Orders', '/Admin/CardPayments', '/Admin/ShopSettings', '/Admin/Partners'] },
-  { label: 'Communication', items: ['/Admin/Newsletter', '/Admin/MailingList', '/Admin/Messages'] },
+  { label: 'Communication', items: ['/Admin/Newsletter', '/Admin/MailingList', '/Admin/Messages', '/Admin/Tickets'] },
   { label: 'Content & Integrations', items: ['/Admin/CMS', '/Admin/SEOCMS', '/Admin/ImageStorage', '/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
   { label: 'System', items: ['/Admin/GeneralSettings', '/Admin/Analytics', '/Admin/FinanceDashboard', '/Admin/AuditLogs', '/Admin/SuccessStories', '/Admin/RecentProjects'] },
 ]

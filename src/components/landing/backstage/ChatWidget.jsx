@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MessageCircle, X, Search, ChevronRight, Home, HelpCircle, Grid3x3, Mail, Phone, MapPin } from 'lucide-react'
-import { createPageUrl } from '@/shared/utils/routing'
-import { features } from '@/lib/settings'
+import { MessageCircle, X, Search, ChevronRight, Home, HelpCircle, Mail, Phone, User, MessageSquare, ArrowRight, Send, Check } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
 
 const HELP_ARTICLES = [
   { title: 'Self-Tape Audition Requests', desc: 'How to submit and manage self-tape requests.' },
@@ -12,38 +13,103 @@ const HELP_ARTICLES = [
   { title: 'Payment & Invoicing', desc: 'M-Pesa and payment processing details.' },
 ]
 
+const ENQUIRY_TOPICS = [
+  'General Inquiry',
+  'Account Support',
+  'Billing & Payments',
+  'Technical Support',
+  'Partnership',
+  'Report Issue',
+  'Feedback',
+  'Other',
+]
+
 export default function ChatWidget() {
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('home')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedArticle, setSelectedArticle] = useState(null)
   const [siteName, setSiteName] = useState('SmartGigs Kenya')
-  const navigate = useNavigate()
+
+  // Contact form state
+  const [showContactForm, setShowContactForm] = useState(false)
+  const [formStep, setFormStep] = useState(1)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    topic: 'General Inquiry',
+    message: '',
+  })
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    // Load site name from settings
     features.getSiteName().then(name => {
       if (name) setSiteName(name)
-    }).catch(() => {
-      // Use default if settings fail to load
-    })
+    }).catch(() => { })
   }, [])
 
   const handleTabClick = (tab) => {
     setActiveTab(tab)
     setSelectedArticle(null)
     if (tab === 'messages') {
-      // Navigate to messages page (or login if not authenticated)
-      navigate(createPageUrl('SignIn'))
+      if (user) {
+        navigate('/ClientMessages')
+      } else {
+        navigate('/SignIn')
+      }
       setOpen(false)
     } else if (tab === 'home') {
-      // Stay on home view
+      setShowContactForm(false)
     }
   }
 
-  const handleContactUs = () => {
-    navigate(createPageUrl('Contact'))
-    setOpen(false)
+  const handleContactSubmit = async () => {
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      error('Error', 'Please fill in all required fields')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      // Create a conversation or message for admin
+      const { data: conversation, error: convError } = await supabase
+        .from('conversations')
+        .insert({
+          participant_1: user?.id || null,
+          participant_2: null, // Will be assigned to admin
+          last_message_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+      if (convError) throw convError
+
+      // Send the message
+      const { error: msgError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversation.id,
+          sender_id: user?.id || null,
+          content: `Contact Form Submission\n\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nTopic: ${formData.topic}\n\nMessage:\n${formData.message}`,
+        })
+
+      if (msgError) throw msgError
+
+      success('Sent', 'Your inquiry has been submitted. Our team will get back to you soon.')
+      setShowContactForm(false)
+      setFormStep(1)
+      setFormData({ name: '', email: '', phone: '', topic: 'General Inquiry', message: '' })
+      setOpen(false)
+    } catch (err) {
+      console.error('Error submitting contact form:', err)
+      error('Error', 'Failed to submit your inquiry. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const filteredArticles = HELP_ARTICLES.filter(a =>
@@ -64,16 +130,120 @@ export default function ChatWidget() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-[60] w-[360px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col" style={{ maxHeight: '70vh' }}>
+    <div className="fixed bottom-6 right-6 z-[60] w-[400px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col" style={{ maxHeight: '80vh' }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-5">
+      <div className="flex items-center justify-between px-5 pt-5 border-b border-gray-100">
         <span className="text-sm font-bold uppercase tracking-tight text-black">{siteName}</span>
         <button onClick={() => setOpen(false)} className="rounded-full p-1 hover:bg-gray-100">
           <X className="h-4 w-4 text-black" />
         </button>
       </div>
 
-      {activeTab === 'help' && selectedArticle ? (
+      {showContactForm ? (
+        /* Multi-step Contact Form */
+        <div className="flex-1 overflow-y-auto px-5 pt-5 pb-4">
+          {formStep === 1 && (
+            <>
+              <h3 className="text-lg font-semibold text-black mb-4">Tell us about yourself</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+                    placeholder="Your full name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+                    placeholder="your@email.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+                    placeholder="+254 7XX XXX XXX"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-6">
+                <button onClick={() => setShowContactForm(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
+                  Cancel
+                </button>
+                <button onClick={() => setFormStep(2)} className="px-4 py-2 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-lg flex items-center gap-2">
+                  Next <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </>
+          )}
+
+          {formStep === 2 && (
+            <>
+              <h3 className="text-lg font-semibold text-black mb-4">What's your inquiry about?</h3>
+              <div className="space-y-2">
+                {ENQUIRY_TOPICS.map((topic) => (
+                  <button
+                    key={topic}
+                    onClick={() => setFormData({ ...formData, topic })}
+                    className={`w-full text-left px-4 py-3 rounded-lg border text-sm font-medium transition-colors ${formData.topic === topic
+                        ? 'border-black bg-black text-white'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
+                  >
+                    {topic}
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-between gap-2 mt-6">
+                <button onClick={() => setFormStep(1)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
+                  Back
+                </button>
+                <button onClick={() => setFormStep(3)} className="px-4 py-2 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-lg flex items-center gap-2">
+                  Next <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </>
+          )}
+
+          {formStep === 3 && (
+            <>
+              <h3 className="text-lg font-semibold text-black mb-4">Tell us more</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
+                  <textarea
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+                    placeholder="Describe your inquiry in detail..."
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between gap-2 mt-6">
+                <button onClick={() => setFormStep(2)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
+                  Back
+                </button>
+                <button onClick={handleContactSubmit} disabled={submitting} className="px-4 py-2 text-sm font-medium text-white bg-[#C9A962] hover:bg-[#D4B575] rounded-lg flex items-center gap-2">
+                  {submitting ? 'Sending...' : 'Submit'}
+                  <Send className="h-4 w-4" />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      ) : activeTab === 'help' && selectedArticle ? (
         /* Article detail view */
         <div className="flex-1 overflow-y-auto px-5 pt-3 pb-4">
           <button
@@ -85,16 +255,6 @@ export default function ChatWidget() {
           </button>
           <h2 className="text-xl font-semibold text-black mb-2">{selectedArticle.title}</h2>
           <p className="text-sm text-gray-600 leading-relaxed">{selectedArticle.desc}</p>
-          <div className="mt-4 rounded-xl border border-gray-200 p-4">
-            <p className="text-sm font-bold text-black">Need more help?</p>
-            <p className="mt-0.5 text-xs text-gray-400">Reach out to our team directly.</p>
-            <button
-              onClick={handleContactUs}
-              className="mt-3 w-full rounded-lg bg-[#C9A962] px-4 py-2 text-sm font-semibold text-black hover:bg-[#D4B575] transition-colors"
-            >
-              Contact Support
-            </button>
-          </div>
         </div>
       ) : (
         <>
@@ -103,29 +263,46 @@ export default function ChatWidget() {
             <h2 className="mt-1 text-xl font-semibold text-black">How can we help you today?</h2>
           </div>
 
-          {/* Search bar */}
-          <div className="px-5">
+          {/* Quick Actions */}
+          <div className="px-5 space-y-2">
+            <button
+              onClick={() => setShowContactForm(true)}
+              className="flex w-full items-center justify-between rounded-xl bg-[#FAF8F0] px-4 py-3 text-left hover:bg-[#F5F2E5] transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 text-[#C9A962]" />
+                <span className="text-sm font-medium text-black">Send us a message</span>
+              </div>
+              <ChevronRight className="h-4 w-4 text-black/40" />
+            </button>
+            <button
+              onClick={() => { setActiveTab('messages'); }}
+              className="flex w-full items-center justify-between rounded-xl bg-[#FAF8F0] px-4 py-3 text-left hover:bg-[#F5F2E5] transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <MessageSquare className="h-5 w-5 text-[#C9A962]" />
+                <span className="text-sm font-medium text-black">View Messages</span>
+              </div>
+              <ChevronRight className="h-4 w-4 text-black/40" />
+            </button>
+          </div>
+
+          {/* Search */}
+          <div className="px-5 mt-4">
             <div className="flex items-center gap-2 rounded-xl bg-[#F4F4F4] px-4 py-3">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for help"
+                placeholder="Search help articles"
                 className="w-full bg-transparent text-sm text-black placeholder:text-[#808080] focus:outline-none"
               />
               <Search className="h-4 w-4 shrink-0 text-[#808080]" />
             </div>
           </div>
 
-          {/* List items */}
+          {/* Help Articles */}
           <div className="mt-4 px-3 flex-1 overflow-y-auto">
-            <button
-              onClick={handleContactUs}
-              className="flex w-full items-center justify-between rounded-xl bg-[#FAF8F0] px-4 py-3 text-left hover:bg-[#F5F2E5] transition-colors"
-            >
-              <span className="text-sm font-medium text-black">Contact Us</span>
-              <ChevronRight className="h-4 w-4 text-black/40" />
-            </button>
             {filteredArticles.map((item) => (
               <button
                 key={item.title}
@@ -137,22 +314,8 @@ export default function ChatWidget() {
               </button>
             ))}
             {filteredArticles.length === 0 && (
-              <p className="px-4 py-3 text-sm text-gray-400">No results found. Try contacting us directly.</p>
+              <p className="px-4 py-3 text-sm text-gray-400">No results found.</p>
             )}
-          </div>
-
-          {/* Ask a question block */}
-          <div className="mx-5 mt-4 mb-4 rounded-xl border border-gray-200 p-4">
-            <p className="text-sm font-bold text-black">Ask a question</p>
-            <p className="mt-0.5 text-xs text-gray-400">AI Agent and team can help</p>
-            <div className="mt-3 flex items-center gap-1">
-              <img src="https://images.unsplash.com/photo-1500648766835-5ccbb910d572?w=40&h=40&fit=crop" alt="" className="h-7 w-7 rounded-full border-2 border-white object-cover" />
-              <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=40&h=40&fit=crop" alt="" className="-ml-2 h-7 w-7 rounded-full border-2 border-white object-cover" />
-              <img src="https://images.unsplash.com/photo-1573496359142-22f9f5c0f57e?w=40&h=40&fit=crop" alt="" className="-ml-2 h-7 w-7 rounded-full border-2 border-white object-cover" />
-              <div className="-ml-2 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-black">
-                <Grid3x3 className="h-3.5 w-3.5 text-white" />
-              </div>
-            </div>
           </div>
         </>
       )}
@@ -160,7 +323,7 @@ export default function ChatWidget() {
       {/* Footer navigation */}
       <div className="flex items-center justify-around border-t border-gray-100 py-3">
         <button
-          onClick={() => { setActiveTab('home'); setSelectedArticle(null); }}
+          onClick={() => { setActiveTab('home'); setSelectedArticle(null); setShowContactForm(false); }}
           className="flex flex-col items-center gap-1"
         >
           <Home className={`h-5 w-5 ${activeTab === 'home' ? 'text-[#C9A962]' : 'text-gray-400'}`} />
@@ -174,7 +337,7 @@ export default function ChatWidget() {
           <span className={`text-xs font-medium ${activeTab === 'messages' ? 'text-[#C9A962]' : 'text-gray-400'}`}>Messages</span>
         </button>
         <button
-          onClick={() => { setActiveTab('help'); setSelectedArticle(null); }}
+          onClick={() => { setActiveTab('help'); setSelectedArticle(null); setShowContactForm(false); }}
           className="flex flex-col items-center gap-1"
         >
           <HelpCircle className={`h-5 w-5 ${activeTab === 'help' ? 'text-[#C9A962]' : 'text-gray-400'}`} />

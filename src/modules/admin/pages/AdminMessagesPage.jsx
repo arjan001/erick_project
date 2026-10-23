@@ -3,17 +3,20 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
-import { MessageSquare, Search, Send, Trash2, User } from 'lucide-react'
+import { MessageSquare, Search, Send, Trash2, User, Plus, X } from 'lucide-react'
 
 export default function AdminMessagesPage() {
   const { user } = useAuth()
   const { success, error } = useToast()
   const [loading, setLoading] = useState(true)
   const [conversations, setConversations] = useState([])
+  const [allUsers, setAllUsers] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [newMessage, setNewMessage] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [sending, setSending] = useState(false)
+  const [showNewConversation, setShowNewConversation] = useState(false)
+  const [userSearchQuery, setUserSearchQuery] = useState('')
 
   const fetchMessages = async () => {
     try {
@@ -65,7 +68,24 @@ export default function AdminMessagesPage() {
     }
   }
 
-  useEffect(() => { fetchMessages(); }, [user])
+  const fetchAllUsers = async () => {
+    try {
+      const { data: users, error } = await supabase
+        .from('users')
+        .select('id, email, full_name, role')
+        .neq('id', user?.id) // Exclude admin user themselves
+
+      if (error) throw error
+      setAllUsers(users || [])
+    } catch (err) {
+      console.error('Error fetching users:', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchMessages()
+    fetchAllUsers()
+  }, [user])
 
   const selectedConversation = conversations.find(c => c.id === selectedId)
 
@@ -120,9 +140,58 @@ export default function AdminMessagesPage() {
     }
   }
 
+  const handleStartConversation = async (targetUserId) => {
+    try {
+      // Check if conversation already exists
+      const existing = conversations.find(c => c.participantId === targetUserId)
+      if (existing) {
+        setSelectedId(existing.id)
+        setShowNewConversation(false)
+        return
+      }
+
+      // Create new conversation
+      const { data: newConv, error: convError } = await supabase
+        .from('conversations')
+        .insert({
+          participant_1: user?.id,
+          participant_2: targetUserId,
+          last_message_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+      if (convError) throw convError
+
+      // Add to conversations list
+      const targetUser = allUsers.find(u => u.id === targetUserId)
+      setConversations(prev => [{
+        id: newConv.id,
+        messages: [],
+        lastMessage: '',
+        lastMessageTime: newConv.created_at,
+        participant: targetUser.email,
+        participantName: targetUser.full_name,
+        participantId: targetUser.id
+      }, ...prev])
+
+      setSelectedId(newConv.id)
+      setShowNewConversation(false)
+      success('Started', 'Conversation started successfully')
+    } catch (err) {
+      console.error('Error starting conversation:', err)
+      error('Failed', 'Failed to start conversation')
+    }
+  }
+
   const filteredConversations = conversations.filter(c =>
     c.participant?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.participantName?.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const filteredUsers = allUsers.filter(u =>
+    u.email?.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+    u.full_name?.toLowerCase().includes(userSearchQuery.toLowerCase())
   )
 
   if (loading) {
@@ -137,7 +206,13 @@ export default function AdminMessagesPage() {
     <div className="bg-white rounded-lg border border-gray-200 flex" style={{ height: 'calc(100vh - 140px)' }}>
       <div className="w-full sm:w-80 border-r border-gray-200 flex flex-col flex-shrink-0">
         <div className="p-4 border-b border-gray-200">
-          <h1 className="text-lg font-bold text-gray-900 mb-3">Admin Messages</h1>
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-lg font-bold text-gray-900">Admin Messages</h1>
+            <Button onClick={() => setShowNewConversation(true)} size="sm" className="bg-black text-white hover:bg-gray-800">
+              <Plus className="w-4 h-4 mr-1" />
+              New
+            </Button>
+          </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -230,6 +305,54 @@ export default function AdminMessagesPage() {
           </div>
         )}
       </div>
+
+      {/* New Conversation Modal */}
+      {showNewConversation && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md max-h-[80vh] flex flex-col">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">Start New Conversation</h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowNewConversation(false)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="p-4 border-b border-gray-200">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search users by name or email..."
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent w-full"
+                />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2">
+              {filteredUsers.length === 0 ? (
+                <div className="p-4 text-center text-sm text-gray-500">No users found</div>
+              ) : (
+                filteredUsers.map(u => (
+                  <button
+                    key={u.id}
+                    onClick={() => handleStartConversation(u.id)}
+                    className="w-full text-left p-3 rounded-lg hover:bg-gray-100 flex items-center gap-3"
+                  >
+                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="w-5 h-5 text-gray-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-gray-900 truncate">{u.full_name || 'Unknown'}</div>
+                      <div className="text-sm text-gray-500 truncate">{u.email}</div>
+                      <div className="text-xs text-gray-400">{u.role}</div>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

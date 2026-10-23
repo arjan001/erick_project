@@ -48,6 +48,9 @@ export function ShopProvider({ children }) {
     if (user?.id) {
       setCurrentUserId(user.id)
       loadCart()
+    } else {
+      // Clear cart when user logs out
+      setCartState([])
     }
   }, [user?.id])
 
@@ -61,6 +64,10 @@ export function ShopProvider({ children }) {
   }, [])
 
   const loadCart = async () => {
+    if (!currentUserId) {
+      setCartState([])
+      return
+    }
     setLoading(true)
     try {
       const cartItems = await getCart()

@@ -278,8 +278,24 @@ export async function getCart() {
   if (!currentUserId) return []
   try {
     const cartItems = await Cart.filter({ user_id: currentUserId })
-    return cartItems || []
+    if (!cartItems || cartItems.length === 0) return []
+
+    // Fetch product details for each cart item
+    const enrichedCart = await Promise.all(
+      cartItems.map(async (item) => {
+        const product = await getProduct(item.product_id)
+        return {
+          ...item,
+          product_name: product?.name || 'Unknown Product',
+          image: product?.images?.[0] || product?.image || '',
+          unit_price: product?.price || 0,
+          is_auction_claim: item.is_auction_claim || false,
+        }
+      })
+    )
+    return enrichedCart
   } catch (error) {
+    console.error('Error loading cart:', error)
     return []
   }
 }

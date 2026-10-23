@@ -1,168 +1,170 @@
 import React, { useState, useEffect } from 'react'
-import { SupportTicket, TicketResponse, AuditLog } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { 
-  Ticket, Search, Eye, Trash2, ChevronLeft, ChevronRight, 
-  Filter, Clock, AlertCircle, CheckCircle, X, MessageSquare 
-} from 'lucide-react'
+import DataTable from '@/components/ui/DataTable'
+import { Ticket, Search, Filter, Plus, X, CheckCircle, Clock, AlertCircle, Ban, User } from 'lucide-react'
 
-const STATUSES = ['open', 'in_progress', 'resolved', 'closed']
-const CATEGORIES = ['bug', 'feature', 'suggestion', 'support', 'other']
-const PRIORITIES = ['low', 'medium', 'high', 'urgent']
+const STATUS_CONFIG = {
+  open: { label: 'Open', color: 'bg-blue-100 text-blue-800', icon: Clock },
+  in_progress: { label: 'In Progress', color: 'bg-yellow-100 text-yellow-800', icon: Ticket },
+  resolved: { label: 'Resolved', color: 'bg-green-100 text-green-800', icon: CheckCircle },
+  closed: { label: 'Closed', color: 'bg-gray-100 text-gray-800', icon: Ban },
+  withdrawn: { label: 'Withdrawn', color: 'bg-red-100 text-red-800', icon: X },
+}
+
+const PRIORITY_CONFIG = {
+  low: { label: 'Low', color: 'bg-gray-100 text-gray-800' },
+  medium: { label: 'Medium', color: 'bg-blue-100 text-blue-800' },
+  high: { label: 'High', color: 'bg-orange-100 text-orange-800' },
+  urgent: { label: 'Urgent', color: 'bg-red-100 text-red-800' },
+}
 
 export default function AdminTicketsPage() {
   const { user } = useAuth()
   const { success, error } = useToast()
   const [loading, setLoading] = useState(true)
   const [tickets, setTickets] = useState([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all')
-  const [filterCategory, setFilterCategory] = useState('all')
-  const [filterPriority, setFilterPriority] = useState('all')
   const [selectedTicket, setSelectedTicket] = useState(null)
-  const [responses, setResponses] = useState([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(10)
-
-  // Debounce search query
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [searchQuery])
+  const [showResponseModal, setShowResponseModal] = useState(false)
+  const [newResponse, setNewResponse] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [priorityFilter, setPriorityFilter] = useState('all')
+  const [submitting, setSubmitting] = useState(false)
 
   const fetchTickets = async () => {
     try {
       setLoading(true)
-      const rows = await SupportTicket.list('-created_at')
-      setTickets(rows || [])
+      const { data, error: err } = await supabase
+        .from('support_tickets')
+        .select(`
+          *,
+          user:users(id, email, full_name),
+          assigned_to_user:users!support_tickets_assigned_to_fkey(id, email, full_name),
+          responses:ticket_responses(id, user_id, is_admin, response, created_at, user:users(id, email, full_name))
+        `)
+        .order('created_at', { ascending: false })
+
+      if (err) throw err
+      setTickets(data || [])
     } catch (err) {
-      
-      error('Error', 'Failed to fetch tickets')
+      console.error('Error fetching tickets:', err)
+      error('Error', 'Failed to load tickets')
     } finally {
       setLoading(false)
     }
   }
 
-  const fetchTicketResponses = async (ticketId) => {
+  useEffect(() => { fetchTickets() }, [])
+
+  const handleStatusChange = async (ticketId, newStatus) => {
     try {
-      const ticketResponses = await TicketResponse.filter({ ticket_id: ticketId }, '-created_at', 100)
-      setResponses(ticketResponses || [])
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({ status: newStatus })
+        .eq('id', ticketId)
+
+      if (error) throw error
+
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus } : t))
+      success('Updated', 'Ticket status updated')
     } catch (err) {
-      
-      setResponses([])
+      console.error('Error updating status:', err)
+      error('Failed', 'Failed to update ticket status')
     }
   }
 
-  useEffect(() => {
-    fetchTickets()
-  }, [])
-
-  const handleUpdateStatus = async (ticketId, newStatus) => {
+  const handleAssignTicket = async (ticketId, assignedTo) => {
     try {
-      const updates = { status: newStatus }
-      if (newStatus === 'resolved') {
-        updates.resolved_at = new Date().toISOString()
-      } else if (newStatus === 'closed') {
-        updates.closed_at = new Date().toISOString()
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({ assigned_to: assignedTo || null })
+        .eq('id', ticketId)
+
+      if (error) throw error
+
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, assigned_to: assignedTo } : t))
+      success('Updated', 'Ticket assigned successfully')
+    } catch (err) {
+      console.error('Error assigning ticket:', err)
+      error('Failed', 'Failed to assign ticket')
+    }
+  }
+
+  const handleSubmitResponse = async () => {
+    if (!newResponse.trim()) return
+    setSubmitting(true)
+    try {
+      const { error } = await supabase
+        .from('ticket_responses')
+        .insert({
+          ticket_id: selectedTicket.id,
+          user_id: user?.id,
+          is_admin: true,
+          response: newResponse,
+        })
+
+      if (error) throw error
+
+      // Update ticket status to in_progress if it was open
+      if (selectedTicket.status === 'open') {
+        await supabase
+          .from('support_tickets')
+          .update({ status: 'in_progress' })
+          .eq('id', selectedTicket.id)
       }
 
-      await SupportTicket.update(ticketId, updates)
-      
-      // Log the action
-      await AuditLog.create({
-        action: 'update',
-        entity_type: 'support_ticket',
-        entity_id: ticketId,
-        performed_by: user.email,
-        details: `Updated ticket status to ${newStatus}`
-      })
-
-      success('Success', `Ticket ${newStatus}`)
+      setNewResponse('')
+      setShowResponseModal(false)
       fetchTickets()
-      if (selectedTicket?.id === ticketId) {
-        setSelectedTicket({ ...selectedTicket, ...updates })
-      }
+      success('Sent', 'Response sent successfully')
     } catch (err) {
-      
-      error('Error', 'Failed to update status')
+      console.error('Error sending response:', err)
+      error('Failed', 'Failed to send response')
+    } finally {
+      setSubmitting(false)
     }
   }
 
-  const handleDeleteTicket = async (ticketId) => {
-    if (!window.confirm('Are you sure you want to delete this ticket?')) return
-    try {
-      await SupportTicket.delete(ticketId)
-      
-      // Log the action
-      await AuditLog.create({
-        action: 'delete',
-        entity_type: 'support_ticket',
-        entity_id: ticketId,
-        performed_by: user.email,
-        details: 'Deleted support ticket'
-      })
-
-      success('Success', 'Ticket deleted')
-      fetchTickets()
-      if (selectedTicket?.id === ticketId) {
-        setSelectedTicket(null)
-      }
-    } catch (err) {
-      
-      error('Error', 'Failed to delete ticket')
-    }
-  }
-
-  const getStatusBadge = (status) => {
-    const map = {
-      open: 'bg-blue-100 text-blue-800',
-      in_progress: 'bg-yellow-100 text-yellow-800',
-      resolved: 'bg-green-100 text-green-800',
-      closed: 'bg-gray-100 text-gray-800',
-    }
-    return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[status] || 'bg-gray-100 text-gray-800'}`}>{status.replace('_', ' ')}</span>
-  }
-
-  const getPriorityBadge = (priority) => {
-    const map = {
-      low: 'bg-gray-100 text-gray-800',
-      medium: 'bg-blue-100 text-blue-800',
-      high: 'bg-orange-100 text-orange-800',
-      urgent: 'bg-red-100 text-red-800',
-    }
-    return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[priority] || 'bg-gray-100 text-gray-800'}`}>{priority}</span>
-  }
-
-  const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch = ticket.ticket_number?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-                         ticket.subject?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-                         ticket.user_name?.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-    const matchesStatus = filterStatus === 'all' || ticket.status === filterStatus
-    const matchesCategory = filterCategory === 'all' || ticket.category === filterCategory
-    const matchesPriority = filterPriority === 'all' || ticket.priority === filterPriority
-    return matchesSearch && matchesStatus && matchesCategory && matchesPriority
+  const filteredTickets = tickets.filter(t => {
+    const matchesSearch = t.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.ticket_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.user?.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesStatus = statusFilter === 'all' || t.status === statusFilter
+    const matchesPriority = priorityFilter === 'all' || t.priority === priorityFilter
+    return matchesSearch && matchesStatus && matchesPriority
   })
 
-  const paginatedTickets = filteredTickets.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
+  const columns = [
+    { key: 'ticket_number', label: 'Ticket #', sortable: true },
+    { key: 'subject', label: 'Subject', sortable: true },
+    { key: 'user_email', label: 'User', sortable: true },
+    { key: 'category', label: 'Category', sortable: true },
+    { key: 'priority', label: 'Priority', sortable: true },
+    { key: 'status', label: 'Status', sortable: true },
+    { key: 'created_at', label: 'Created', sortable: true },
+  ]
 
-  const totalPages = Math.ceil(filteredTickets.length / itemsPerPage)
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page)
-  }
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [debouncedSearchQuery, filterStatus, filterCategory, filterPriority])
+  const tableData = filteredTickets.map(t => ({
+    id: t.id,
+    ticket_number: t.ticket_number,
+    subject: t.subject,
+    user_email: t.user?.email || 'Unknown',
+    category: t.category,
+    priority: (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${PRIORITY_CONFIG[t.priority]?.color || 'bg-gray-100'}`}>
+        {PRIORITY_CONFIG[t.priority]?.label || t.priority}
+      </span>
+    ),
+    status: (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_CONFIG[t.status]?.color || 'bg-gray-100'}`}>
+        {STATUS_CONFIG[t.status]?.label || t.status}
+      </span>
+    ),
+    created_at: new Date(t.created_at).toLocaleDateString(),
+  }))
 
   if (loading) {
     return (
@@ -173,244 +175,193 @@ export default function AdminTicketsPage() {
   }
 
   return (
-    <div>
-      <div className="mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Support Tickets</h1>
-        <p className="text-gray-600 mt-1">View and manage all support tickets</p>
+        <Button onClick={() => {/* TODO: Create ticket as admin */ }} className="bg-black text-white hover:bg-gray-800">
+          <Plus className="w-4 h-4 mr-2" />
+          Create Ticket
+        </Button>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Search tickets..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-64"
-              />
-            </div>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-            >
-              <option value="all">All Status</option>
-              {STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
-            </select>
-            <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-            >
-              <option value="all">All Categories</option>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <select
-              value={filterPriority}
-              onChange={(e) => setFilterPriority(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-            >
-              <option value="all">All Priorities</option>
-              {PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-          </div>
-          <div className="text-sm text-gray-500">Total: {filteredTickets.length}</div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="text-sm text-gray-500">Total Tickets</div>
+          <div className="text-2xl font-bold text-gray-900">{tickets.length}</div>
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Created By</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Category</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Priority</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Created</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {paginatedTickets.length === 0 && (
-                <tr><td colSpan="7" className="px-4 py-8 text-center text-sm text-gray-500">No tickets found</td></tr>
-              )}
-              {paginatedTickets.map(ticket => (
-                <tr key={ticket.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{ticket.ticket_number}</p>
-                      <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">{ticket.subject}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <div className="text-xs text-gray-700">
-                      <p className="font-medium">{ticket.user_name}</p>
-                      <p className="text-gray-500">{ticket.user_role}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <span className="text-xs font-medium text-gray-700 capitalize">{ticket.category}</span>
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    {getPriorityBadge(ticket.priority)}
-                  </td>
-                  <td className="px-4 py-3">
-                    {getStatusBadge(ticket.status)}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-gray-500 hidden lg:table-cell">
-                    {new Date(ticket.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => { setSelectedTicket(ticket); fetchTicketResponses(ticket.id); }} title="View Details" className="p-1">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteTicket(ticket.id)} title="Delete" className="p-1">
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="text-sm text-gray-500">Open</div>
+          <div className="text-2xl font-bold text-blue-600">{tickets.filter(t => t.status === 'open').length}</div>
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredTickets.length)} of {filteredTickets.length} tickets
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-3"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handlePageChange(page)}
-                  className={`px-3 ${currentPage === page ? 'bg-black text-white hover:bg-gray-800' : ''}`}
-                >
-                  {page}
-                </Button>
-              ))}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-3"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        )}
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="text-sm text-gray-500">In Progress</div>
+          <div className="text-2xl font-bold text-yellow-600">{tickets.filter(t => t.status === 'in_progress').length}</div>
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="text-sm text-gray-500">Resolved</div>
+          <div className="text-2xl font-bold text-green-600">{tickets.filter(t => t.status === 'resolved').length}</div>
+        </div>
       </div>
+
+      {/* Filters */}
+      <div className="flex gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search tickets..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent w-full"
+          />
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+        >
+          <option value="all">All Status</option>
+          <option value="open">Open</option>
+          <option value="in_progress">In Progress</option>
+          <option value="resolved">Resolved</option>
+          <option value="closed">Closed</option>
+          <option value="withdrawn">Withdrawn</option>
+        </select>
+        <select
+          value={priorityFilter}
+          onChange={(e) => setPriorityFilter(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+        >
+          <option value="all">All Priority</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="urgent">Urgent</option>
+        </select>
+      </div>
+
+      {/* DataTable */}
+      <DataTable
+        columns={columns}
+        data={tableData}
+        selectable
+        onRowClick={(row) => setSelectedTicket(tickets.find(t => t.id === row.id))}
+        emptyMessage="No tickets found"
+      />
 
       {/* Ticket Detail Modal */}
       {selectedTicket && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Ticket className="w-5 h-5 text-gray-900" />
-                <div>
-                  <p className="font-bold text-gray-900">{selectedTicket.ticket_number}</p>
-                  <p className="text-sm text-gray-600">{selectedTicket.subject}</p>
-                </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">{selectedTicket.ticket_number}</h2>
+                <div className="text-sm text-gray-500">{selectedTicket.subject}</div>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedTicket(null)}><X className="w-4 h-4" /></Button>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedTicket(null)}>
+                <X className="w-4 h-4" />
+              </Button>
             </div>
-
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  {getPriorityBadge(selectedTicket.priority)}
-                  {getStatusBadge(selectedTicket.status)}
-                  {selectedTicket.is_public && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Public
-                    </span>
-                  )}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Ticket Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-gray-500">Status</div>
+                  <select
+                    value={selectedTicket.status}
+                    onChange={(e) => handleStatusChange(selectedTicket.id, e.target.value)}
+                    className="mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent w-full"
+                  >
+                    {Object.entries(STATUS_CONFIG).map(([key, config]) => (
+                      <option key={key} value={key}>{config.label}</option>
+                    ))}
+                  </select>
                 </div>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedTicket.description}</p>
-                <p className="text-xs text-gray-500 mt-2">
-                  Created by <span className="font-medium">{selectedTicket.user_name}</span> ({selectedTicket.user_role}) on {new Date(selectedTicket.created_at).toLocaleString()}
-                </p>
+                <div>
+                  <div className="text-sm text-gray-500">Priority</div>
+                  <div className="mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                    {PRIORITY_CONFIG[selectedTicket.priority]?.label || selectedTicket.priority}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500">Category</div>
+                  <div className="mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">{selectedTicket.category}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500">User</div>
+                  <div className="mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                    {selectedTicket.user?.full_name || selectedTicket.user?.email || 'Unknown'}
+                  </div>
+                </div>
               </div>
 
-              <div className="border-t border-gray-200 pt-4">
-                <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4" />
-                  Responses ({responses.length})
-                </h3>
+              {/* Description */}
+              <div>
+                <div className="text-sm text-gray-500 mb-2">Description</div>
+                <div className="p-4 bg-gray-50 rounded-lg text-gray-900">{selectedTicket.description}</div>
+              </div>
+
+              {/* Responses */}
+              <div>
+                <div className="text-sm text-gray-500 mb-2">Responses</div>
                 <div className="space-y-3">
-                  {responses.length === 0 ? (
-                    <p className="text-sm text-gray-500 text-center py-4">No responses yet</p>
+                  {selectedTicket.responses?.length === 0 ? (
+                    <div className="text-sm text-gray-400 italic">No responses yet</div>
                   ) : (
-                    responses.map((response) => (
-                      <div key={response.id} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm font-medium text-gray-900">{response.responder_name}</p>
-                          <p className="text-xs text-gray-500">{new Date(response.created_at).toLocaleString()}</p>
+                    selectedTicket.responses.map((response) => (
+                      <div key={response.id} className={`p-4 rounded-lg ${response.is_admin ? 'bg-blue-50' : 'bg-gray-50'}`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <User className="w-4 h-4 text-gray-600" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-sm text-gray-900">
+                              {response.is_admin ? 'Admin' : response.user?.full_name || response.user?.email || 'User'}
+                            </div>
+                            <div className="text-xs text-gray-500">{new Date(response.created_at).toLocaleString()}</div>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-700 whitespace-pre-wrap">{response.response}</p>
+                        <div className="text-sm text-gray-700">{response.response}</div>
                       </div>
                     ))
                   )}
                 </div>
               </div>
             </div>
+            <div className="p-4 border-t border-gray-200 flex justify-end gap-3">
+              <Button onClick={() => setShowResponseModal(true)} className="bg-black text-white hover:bg-gray-800">
+                Add Response
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
-            <div className="p-4 border-t border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex gap-2">
-                  {selectedTicket.status !== 'closed' && (
-                    <>
-                      {selectedTicket.status !== 'resolved' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleUpdateStatus(selectedTicket.id, 'resolved')}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Mark Resolved
-                        </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleUpdateStatus(selectedTicket.id, 'closed')}
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Close Ticket
-                      </Button>
-                    </>
-                  )}
-                  {selectedTicket.status === 'closed' && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleUpdateStatus(selectedTicket.id, 'open')}
-                    >
-                      <Clock className="w-4 h-4 mr-2" />
-                      Reopen Ticket
-                    </Button>
-                  )}
-                </div>
-              </div>
+      {/* Response Modal */}
+      {showResponseModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">Add Response</h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowResponseModal(false)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="p-4">
+              <textarea
+                value={newResponse}
+                onChange={(e) => setNewResponse(e.target.value)}
+                rows={5}
+                placeholder="Type your response..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+              />
+            </div>
+            <div className="p-4 border-t border-gray-200 flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => setShowResponseModal(false)}>Cancel</Button>
+              <Button onClick={handleSubmitResponse} disabled={submitting} className="bg-black text-white hover:bg-gray-800">
+                {submitting ? 'Sending...' : 'Send Response'}
+              </Button>
             </div>
           </div>
         </div>
