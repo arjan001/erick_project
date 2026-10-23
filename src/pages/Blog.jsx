@@ -106,7 +106,7 @@ export default function BlogPage() {
             <div className="flex flex-wrap items-center gap-6 text-white">
               <div className="flex items-center gap-2">
                 <User className="w-5 h-5" />
-                <span>SmartGigs Team</span>
+                <span>SmartGigs Kenya Team</span>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
