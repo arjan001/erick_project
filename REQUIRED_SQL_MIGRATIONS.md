@@ -20,6 +20,11 @@ Please run these migrations in Supabase SQL Editor in the order listed:
 **File:** `database/migrations/add_auth_providers_rls.sql`
 - Fixes auth_providers table RLS policies
 
+## 4. Messages Attachment Column
+**File:** `database/migrations/add_attachment_to_messages.sql`
+- Adds attachment JSONB column to messages table
+- Fixes message sending with attachments
+
 ## How to Run:
 1. Go to your Supabase project
 2. Navigate to SQL Editor
