@@ -283,71 +283,59 @@ export default function ArtistJobsPage() {
         </div>
       </div>
 
+      {/* Filters Bar - Only show when Job Board tab is active */}
+      {activeTab === 'jobboard' && (
+        <div className="bg-white border-b border-gray-200 px-6 py-3">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-gray-700">Filters:</span>
+            <button
+              onClick={() => setFilters({ ...filters, role: filters.role === 'all' ? 'actor' : 'all' })}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium ${filters.role !== 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+              Roles
+            </button>
+            <button
+              onClick={() => setFilters({ ...filters, skill: filters.skill === 'all' ? 'acting' : 'all' })}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium ${filters.skill !== 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+              Skills
+            </button>
+            <button
+              onClick={() => setFilters({ ...filters, location: filters.location === 'all' ? 'nairobi' : 'all' })}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium ${filters.location !== 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+              Location
+            </button>
+            <button
+              onClick={() => setFilters({ ...filters, projectType: filters.projectType === 'all' ? 'commercial' : 'all' })}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium ${filters.projectType !== 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+              Project types
+            </button>
+            <button
+              onClick={() => setFilters({ ...filters, paid: filters.paid === 'all' ? 'paid' : 'all' })}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium ${filters.paid !== 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+              Paid
+            </button>
+            {(filters.role !== 'all' || filters.skill !== 'all' || filters.location !== 'all' || filters.projectType !== 'all' || filters.paid !== 'all') && (
+              <button
+                onClick={() => setFilters({ role: 'all', skill: 'all', location: 'all', projectType: 'all', paid: 'all' })}
+                className="px-3 py-1.5 rounded-md text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Content */}
       <div className="p-6">
         {activeTab === 'jobboard' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Side - Job List */}
             <div className="lg:col-span-1">
-              {/* Filters - Moved below Job Board tab */}
-              <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Filter className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-900">Filters</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <select
-                    value={filters.role}
-                    onChange={(e) => setFilters({ ...filters, role: e.target.value })}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                  >
-                    <option value="all">All Roles</option>
-                    <option value="actor">Actor</option>
-                    <option value="model">Model</option>
-                    <option value="voiceover">Voiceover</option>
-                    <option value="dancer">Dancer</option>
-                  </select>
-                  <select
-                    value={filters.skill}
-                    onChange={(e) => setFilters({ ...filters, skill: e.target.value })}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                  >
-                    <option value="all">All Skills</option>
-                    <option value="acting">Acting</option>
-                    <option value="modeling">Modeling</option>
-                    <option value="singing">Singing</option>
-                  </select>
-                  <select
-                    value={filters.location}
-                    onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                  >
-                    <option value="all">All Locations</option>
-                    <option value="nairobi">Nairobi</option>
-                    <option value="mombasa">Mombasa</option>
-                    <option value="kisumu">Kisumu</option>
-                  </select>
-                  <select
-                    value={filters.projectType}
-                    onChange={(e) => setFilters({ ...filters, projectType: e.target.value })}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                  >
-                    <option value="all">All Types</option>
-                    <option value="commercial">Commercial</option>
-                    <option value="film">Film</option>
-                    <option value="tv">TV</option>
-                  </select>
-                  <select
-                    value={filters.paid}
-                    onChange={(e) => setFilters({ ...filters, paid: e.target.value })}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm col-span-2"
-                  >
-                    <option value="all">All</option>
-                    <option value="paid">Paid</option>
-                    <option value="unpaid">Unpaid</option>
-                  </select>
-                </div>
-              </div>
 
               {/* Job List */}
               <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
