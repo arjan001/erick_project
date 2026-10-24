@@ -25,6 +25,12 @@ Please run these migrations in Supabase SQL Editor in the order listed:
 - Adds attachment JSONB column to messages table
 - Fixes message sending with attachments
 
+## 5. Remove Messages RLS
+**File:** `database/migrations/remove_messages_rls.sql`
+- Removes restrictive RLS policies on messages table
+- Allows users to send messages without permission errors
+- Creates permissive policies for authenticated users
+
 ## How to Run:
 1. Go to your Supabase project
 2. Navigate to SQL Editor

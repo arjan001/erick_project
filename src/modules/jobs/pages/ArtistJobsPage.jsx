@@ -164,6 +164,12 @@ export default function ArtistJobsPage() {
   const handleApply = async () => {
     if (!selectedJob) return
 
+    // Confirm which type they're applying to
+    const jobType = selectedJob.type === 'job' ? 'Job' : 'Project'
+    if (!window.confirm(`Apply to this ${jobType}?\n\n${selectedJob.title}\n\nType: ${jobType}\nClient: ${selectedJob.client_name}`)) {
+      return
+    }
+
     try {
       await Application.create({
         job_id: selectedJob.type === 'job' ? selectedJob.id : null,
@@ -174,7 +180,7 @@ export default function ArtistJobsPage() {
         media_urls: []
       })
 
-      success('Applied', 'Your application has been submitted successfully')
+      success('Applied', `Your application for this ${jobType} has been submitted successfully`)
 
       // Update the job's has_applied status
       setJobs(prev => prev.map(job =>
@@ -182,7 +188,8 @@ export default function ArtistJobsPage() {
       ))
       setSelectedJob(prev => ({ ...prev, has_applied: true }))
     } catch (err) {
-      error('Failed', 'Failed to submit application')
+      console.error('Application error:', err)
+      error('Failed', `Failed to submit application: ${err.message || 'Unknown error'}`)
     }
   }
 
@@ -449,6 +456,50 @@ export default function ArtistJobsPage() {
                     <div className="mb-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-3">Job Description</h3>
                       <p className="text-gray-700 leading-relaxed whitespace-pre-line">{selectedJob.description}</p>
+                    </div>
+
+                    {/* Additional Job Details */}
+                    <div className="mb-6 space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Job Details</h3>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase">Type</span>
+                          <p className="text-sm font-medium text-gray-900 capitalize">{selectedJob.type || 'Job'}</p>
+                        </div>
+                        {selectedJob.budget_type && (
+                          <div>
+                            <span className="text-xs text-gray-500 uppercase">Budget Type</span>
+                            <p className="text-sm font-medium text-gray-900 capitalize">{selectedJob.budget_type}</p>
+                          </div>
+                        )}
+                        {selectedJob.employment_type && (
+                          <div>
+                            <span className="text-xs text-gray-500 uppercase">Employment Type</span>
+                            <p className="text-sm font-medium text-gray-900 capitalize">{selectedJob.employment_type}</p>
+                          </div>
+                        )}
+                        {selectedJob.production_type && (
+                          <div>
+                            <span className="text-xs text-gray-500 uppercase">Production Type</span>
+                            <p className="text-sm font-medium text-gray-900 capitalize">{selectedJob.production_type}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {selectedJob.additional_info && (
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase">Additional Information</span>
+                          <p className="text-sm text-gray-700 mt-1 whitespace-pre-line">{selectedJob.additional_info}</p>
+                        </div>
+                      )}
+
+                      {selectedJob.deadline && (
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase">Application Deadline</span>
+                          <p className="text-sm font-medium text-gray-900">{new Date(selectedJob.deadline).toLocaleDateString()}</p>
+                        </div>
+                      )}
                     </div>
 
                     {selectedJob.required_skills && selectedJob.required_skills.length > 0 && (

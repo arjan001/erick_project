@@ -127,7 +127,8 @@ export default function MessagesPage() {
   const selectedConversation = conversations.find(c => c.id === selectedId)
 
   const handleSend = async () => {
-    if (!messageInput.trim() || !selectedConversation) return
+    if (!messageInput.trim() && !attachedFile) return
+    if (!selectedConversation) return
 
     // Check subscription for clients
     if (user.role === 'client' || user.role === 'project_owner') {
