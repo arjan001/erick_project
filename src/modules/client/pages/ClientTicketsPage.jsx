@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import DataTable from '@/components/admin/DataTable'
 import { Ticket, Search, Plus, X, CheckCircle, Clock, AlertCircle, Ban, MessageSquare } from 'lucide-react'
+import notificationService from '@/shared/services/notificationService'
 
 const STATUS_CONFIG = {
   open: { label: 'Open', color: 'bg-blue-100 text-blue-800', icon: Clock },
@@ -82,9 +83,11 @@ export default function ClientTicketsPage() {
     }
     setSubmitting(true)
     try {
-      const { error } = await supabase
+      const ticketNumber = `TKT-${Date.now().toString().slice(-6)}`
+      const { data, error } = await supabase
         .from('support_tickets')
         .insert({
+          ticket_number: ticketNumber,
           user_id: user?.id,
           subject: formData.subject,
           description: formData.description,
@@ -92,13 +95,48 @@ export default function ClientTicketsPage() {
           priority: formData.priority,
           status: 'open',
         })
+        .select()
+        .single()
 
       if (error) throw error
+
+      // Create notification for user
+      await notificationService.create({
+        user_id: user.id,
+        type: 'ticket',
+        title: 'Ticket Submitted',
+        message: `Your ticket ${ticketNumber} has been submitted successfully`,
+        link: '/SupportTickets',
+        metadata: { ticket_number: ticketNumber, ticket_id: data.id }
+      })
+
+      // Create notification for all admin users
+      try {
+        const { data: adminUsers } = await supabase
+          .from('users')
+          .select('id')
+          .eq('role', 'admin')
+
+        if (adminUsers && adminUsers.length > 0) {
+          for (const admin of adminUsers) {
+            await notificationService.create({
+              user_id: admin.id,
+              type: 'ticket',
+              title: 'New Support Ticket',
+              message: `New ticket ${ticketNumber} submitted by ${user.full_name}`,
+              link: '/Admin/Tickets',
+              metadata: { ticket_number: ticketNumber, ticket_id: data.id, user_id: user.id }
+            })
+          }
+        }
+      } catch (notifErr) {
+        console.error('Error creating admin notification:', notifErr)
+      }
 
       setFormData({ subject: '', description: '', category: 'General', priority: 'medium' })
       setShowCreateModal(false)
       fetchTickets()
-      success('Created', 'Ticket created successfully')
+      success('Created', `Ticket ${ticketNumber} created successfully`)
     } catch (err) {
       console.error('Error creating ticket:', err)
       error('Failed', 'Failed to create ticket')

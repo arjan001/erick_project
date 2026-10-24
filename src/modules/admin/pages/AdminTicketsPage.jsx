@@ -117,6 +117,25 @@ export default function AdminTicketsPage() {
           .eq('id', selectedTicket.id)
       }
 
+      // Send notification to the ticket creator
+      if (selectedTicket.user_id) {
+        try {
+          await notificationService.create({
+            user_id: selectedTicket.user_id,
+            type: 'ticket_response',
+            title: 'Admin Response to Your Ticket',
+            message: `An admin has responded to your support ticket #${selectedTicket.ticket_number}`,
+            link: '/SupportTickets',
+            metadata: {
+              ticket_id: selectedTicket.id,
+              ticket_number: selectedTicket.ticket_number
+            }
+          })
+        } catch (notifErr) {
+          console.error('Error sending notification:', notifErr)
+        }
+      }
+
       setNewResponse('')
       setShowResponseModal(false)
       fetchTickets()

@@ -75,6 +75,8 @@ export default function MessagesPage() {
   const [isPaused, setIsPaused] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
   const [timerInterval, setTimerInterval] = useState(null)
+  const [activeCall, setActiveCall] = useState(null) // 'audio' | 'video' | null
+  const [callDuration, setCallDuration] = useState(0)
   const messagesEndRef = useRef(null)
   const fileInputRef = useRef(null)
   const mediaRecorderRef = useRef(null)
@@ -423,10 +425,22 @@ export default function MessagesPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
+              <button
+                onClick={() => {
+                  alert('Audio/Video calls coming soon!\n\nWe are implementing WebRTC-based calling similar to WhatsApp.')
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+                title="Audio call (coming soon)"
+              >
                 <Phone className="w-5 h-5 text-gray-600" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
+              <button
+                onClick={() => {
+                  alert('Audio/Video calls coming soon!\n\nWe are implementing WebRTC-based calling similar to WhatsApp.')
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+                title="Video call (coming soon)"
+              >
                 <Video className="w-5 h-5 text-gray-600" />
               </button>
               <button className="p-2 hover:bg-gray-100 rounded-lg">
@@ -452,12 +466,16 @@ export default function MessagesPage() {
                     <p className="text-sm">{msg.content}</p>
                     {msg.attachment && (
                       <div className="mt-2">
-                        {msg.attachment.file_type?.startsWith('image/') ? (
-                          <img src={msg.attachment.url} alt="attachment" className="max-w-full rounded-lg" />
+                        {msg.attachment.type?.startsWith('image/') ? (
+                          <img src={msg.attachment.url} alt="attachment" className="max-w-full rounded-lg cursor-pointer hover:opacity-90" />
+                        ) : msg.attachment.type?.startsWith('video/') ? (
+                          <video src={msg.attachment.url} controls className="max-w-full rounded-lg" />
+                        ) : msg.attachment.type?.startsWith('audio/') ? (
+                          <audio src={msg.attachment.url} controls className="w-full" />
                         ) : (
                           <a href={msg.attachment.url} download className="text-blue-600 text-sm flex items-center gap-1">
                             <Paperclip className="w-4 h-4" />
-                            {msg.attachment.file_name}
+                            {msg.attachment.name}
                           </a>
                         )}
                       </div>

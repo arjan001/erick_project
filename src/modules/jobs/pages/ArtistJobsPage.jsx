@@ -16,6 +16,7 @@ export default function ArtistJobsPage() {
   const [applications, setApplications] = useState([])
   const [invitations, setInvitations] = useState([])
   const [selectedJob, setSelectedJob] = useState(null)
+  const [selectedRole, setSelectedRole] = useState(null) // For production role selection
   const [loading, setLoading] = useState(true)
 
   // Filters
@@ -85,13 +86,25 @@ export default function ArtistJobsPage() {
           title: job.title,
           description: job.description,
           location: job.location,
-          budget: job.budget,
-          budget_type: job.budget_type,
+          city: job.city,
+          country: job.country,
+          budget: job.salary_range || job.budget,
+          budget_type: job.rate_type || job.budget_type,
           duration: job.duration,
+          rate: job.rate,
           client_name: job.client_name || 'Client',
           client_verified: true,
           image: job.cover_image,
           posted_date: job.created_at,
+          job_type: job.job_type,
+          category: job.category,
+          discipline: job.discipline || [],
+          requirements: job.requirements || [],
+          responsibilities: job.responsibilities || [],
+          audition_date: job.audition_date,
+          audition_location: job.audition_location,
+          submission_deadline: job.submission_deadline,
+          remote: job.remote,
           required_skills: job.required_skills || [],
           has_applied: appliedJobIds.includes(job.id)
         })),
@@ -166,7 +179,8 @@ export default function ArtistJobsPage() {
 
     // Confirm which type they're applying to
     const jobType = selectedJob.type === 'job' ? 'Job' : 'Project'
-    if (!window.confirm(`Apply to this ${jobType}?\n\n${selectedJob.title}\n\nType: ${jobType}\nClient: ${selectedJob.client_name}`)) {
+    const roleInfo = selectedRole ? `\nRole: ${selectedRole}` : ''
+    if (!window.confirm(`Apply to this ${jobType}?\n\n${selectedJob.title}\n\nType: ${jobType}\nClient: ${selectedJob.client_name}${roleInfo}`)) {
       return
     }
 
@@ -176,17 +190,19 @@ export default function ArtistJobsPage() {
         project_id: selectedJob.type === 'project' ? selectedJob.id : null,
         user_id: user.id,
         status: 'pending',
-        cover_letter: '',
-        media_urls: []
+        cover_letter: selectedRole ? `Applying for role: ${selectedRole}` : '',
+        media_urls: [],
+        applied_role: selectedRole || null
       })
 
-      success('Applied', `Your application for this ${jobType} has been submitted successfully`)
+      success('Applied', `Your application for this ${jobType}${selectedRole ? ` as ${selectedRole}` : ''} has been submitted successfully`)
 
       // Update the job's has_applied status
       setJobs(prev => prev.map(job =>
         job.id === selectedJob.id ? { ...job, has_applied: true } : job
       ))
       setSelectedJob(prev => ({ ...prev, has_applied: true }))
+      setSelectedRole(null) // Clear selected role after applying
     } catch (err) {
       console.error('Application error:', err)
       error('Failed', `Failed to submit application: ${err.message || 'Unknown error'}`)
@@ -467,40 +483,145 @@ export default function ArtistJobsPage() {
                           <span className="text-xs text-gray-500 uppercase">Type</span>
                           <p className="text-sm font-medium text-gray-900 capitalize">{selectedJob.type || 'Job'}</p>
                         </div>
+                        {selectedJob.job_type && (
+                          <div>
+                            <span className="text-xs text-gray-500 uppercase">Job Type</span>
+                            <p className="text-sm font-medium text-gray-900 capitalize">{selectedJob.job_type}</p>
+                          </div>
+                        )}
+                        {selectedJob.category && (
+                          <div>
+                            <span className="text-xs text-gray-500 uppercase">Category</span>
+                            <p className="text-sm font-medium text-gray-900 capitalize">{selectedJob.category}</p>
+                          </div>
+                        )}
                         {selectedJob.budget_type && (
                           <div>
                             <span className="text-xs text-gray-500 uppercase">Budget Type</span>
                             <p className="text-sm font-medium text-gray-900 capitalize">{selectedJob.budget_type}</p>
                           </div>
                         )}
-                        {selectedJob.employment_type && (
+                        {selectedJob.rate && (
                           <div>
-                            <span className="text-xs text-gray-500 uppercase">Employment Type</span>
-                            <p className="text-sm font-medium text-gray-900 capitalize">{selectedJob.employment_type}</p>
+                            <span className="text-xs text-gray-500 uppercase">Rate</span>
+                            <p className="text-sm font-medium text-gray-900">{selectedJob.rate}</p>
                           </div>
                         )}
-                        {selectedJob.production_type && (
+                        {selectedJob.remote !== undefined && (
                           <div>
-                            <span className="text-xs text-gray-500 uppercase">Production Type</span>
-                            <p className="text-sm font-medium text-gray-900 capitalize">{selectedJob.production_type}</p>
+                            <span className="text-xs text-gray-500 uppercase">Remote</span>
+                            <p className="text-sm font-medium text-gray-900">{selectedJob.remote ? 'Yes' : 'No'}</p>
+                          </div>
+                        )}
+                        {selectedJob.city && (
+                          <div>
+                            <span className="text-xs text-gray-500 uppercase">City</span>
+                            <p className="text-sm font-medium text-gray-900">{selectedJob.city}</p>
+                          </div>
+                        )}
+                        {selectedJob.country && (
+                          <div>
+                            <span className="text-xs text-gray-500 uppercase">Country</span>
+                            <p className="text-sm font-medium text-gray-900">{selectedJob.country}</p>
                           </div>
                         )}
                       </div>
 
-                      {selectedJob.additional_info && (
+                      {selectedJob.audition_date && (
                         <div>
-                          <span className="text-xs text-gray-500 uppercase">Additional Information</span>
-                          <p className="text-sm text-gray-700 mt-1 whitespace-pre-line">{selectedJob.additional_info}</p>
+                          <span className="text-xs text-gray-500 uppercase">Audition Date</span>
+                          <p className="text-sm font-medium text-gray-900">{new Date(selectedJob.audition_date).toLocaleDateString()}</p>
                         </div>
                       )}
 
-                      {selectedJob.deadline && (
+                      {selectedJob.audition_location && (
                         <div>
-                          <span className="text-xs text-gray-500 uppercase">Application Deadline</span>
-                          <p className="text-sm font-medium text-gray-900">{new Date(selectedJob.deadline).toLocaleDateString()}</p>
+                          <span className="text-xs text-gray-500 uppercase">Audition Location</span>
+                          <p className="text-sm font-medium text-gray-900">{selectedJob.audition_location}</p>
+                        </div>
+                      )}
+
+                      {selectedJob.submission_deadline && (
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase">Submission Deadline</span>
+                          <p className="text-sm font-medium text-gray-900">{new Date(selectedJob.submission_deadline).toLocaleString()}</p>
+                        </div>
+                      )}
+
+                      {selectedJob.requirements && selectedJob.requirements.length > 0 && (
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase">Requirements</span>
+                          <ul className="mt-1 list-disc list-inside text-sm text-gray-700">
+                            {selectedJob.requirements.map((req, idx) => (
+                              <li key={idx}>{req}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {selectedJob.responsibilities && selectedJob.responsibilities.length > 0 && (
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase">Responsibilities</span>
+                          <ul className="mt-1 list-disc list-inside text-sm text-gray-700">
+                            {selectedJob.responsibilities.map((resp, idx) => (
+                              <li key={idx}>{resp}</li>
+                            ))}
+                          </ul>
                         </div>
                       )}
                     </div>
+
+                    {/* Production Roles Selection */}
+                    {selectedJob.discipline && selectedJob.discipline.length > 0 && (
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Available Roles</h3>
+                        <p className="text-sm text-gray-600 mb-4">Select a role to view details and apply:</p>
+                        <div className="space-y-3">
+                          {selectedJob.discipline.map((role, idx) => (
+                            <div
+                              key={idx}
+                              onClick={() => setSelectedRole(role)}
+                              className={`p-4 border rounded-lg cursor-pointer transition-colors ${selectedRole === role ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                                }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h4 className="font-medium text-gray-900">{role}</h4>
+                                  <p className="text-sm text-gray-600 mt-1">
+                                    {selectedJob.description ?
+                                      selectedJob.description.substring(0, 150) + '...' :
+                                      'Role available for this production'
+                                    }
+                                  </p>
+                                </div>
+                                <ChevronRight className="w-5 h-5 text-gray-400" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Selected Role Details */}
+                    {selectedRole && (
+                      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-lg font-semibold text-gray-900">Role: {selectedRole}</h3>
+                          <button
+                            onClick={() => setSelectedRole(null)}
+                            className="text-sm text-gray-600 hover:text-gray-900"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                        <p className="text-sm text-gray-700">
+                          {selectedJob.description || 'No specific description for this role.'}
+                        </p>
+                        <div className="mt-3">
+                          <p className="text-xs text-gray-500">Apply specifically to this role in the production.</p>
+                        </div>
+                      </div>
+                    )}
 
                     {selectedJob.required_skills && selectedJob.required_skills.length > 0 && (
                       <div className="mb-6">
@@ -544,133 +665,138 @@ export default function ArtistJobsPage() {
               )}
             </div>
           </div>
-        )}
+        )
+        }
 
-        {activeTab === 'applications' && (
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            {/* Filter Tabs */}
-            <div className="border-b border-gray-200 px-6 py-4">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setApplicationFilter('all')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${applicationFilter === 'all'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                >
-                  All ({applications.length})
-                </button>
-                <button
-                  onClick={() => setApplicationFilter('withdrawn')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${applicationFilter === 'withdrawn'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                >
-                  Withdrawn ({applications.filter(a => a.status === 'withdrawn').length})
-                </button>
+        {
+          activeTab === 'applications' && (
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              {/* Filter Tabs */}
+              <div className="border-b border-gray-200 px-6 py-4">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setApplicationFilter('all')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium ${applicationFilter === 'all'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                  >
+                    All ({applications.length})
+                  </button>
+                  <button
+                    onClick={() => setApplicationFilter('withdrawn')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium ${applicationFilter === 'withdrawn'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                  >
+                    Withdrawn ({applications.filter(a => a.status === 'withdrawn').length})
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Applications Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">JOB</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CLIENT</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">BUDGET</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LOCATION</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">APPLIED</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredApplications.length === 0 ? (
+              {/* Applications Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                        No applications found
-                      </td>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">JOB</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CLIENT</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">BUDGET</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LOCATION</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">APPLIED</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                     </tr>
-                  ) : (
-                    filteredApplications.map(app => (
-                      <tr key={app.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            {app.job?.image && (
-                              <img src={app.job.image} alt="" className="w-12 h-12 object-cover rounded-lg" />
-                            )}
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">{app.job?.title}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{app.job?.client_name}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{app.job?.budget || 'Contact'}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{app.job?.location}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${app.status === 'withdrawn'
-                            ? 'bg-red-100 text-red-800'
-                            : app.status === 'hired'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-blue-100 text-blue-800'
-                            }`}>
-                            {app.status === 'withdrawn' ? 'Withdrawn' : app.status.charAt(0).toUpperCase() + app.status.slice(1)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {new Date(app.applied_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => {
-                                const job = jobs.find(j => j.id === app.job_id) || {
-                                  id: app.job_id,
-                                  title: app.job?.title,
-                                  description: app.job?.description,
-                                  location: app.job?.location,
-                                  budget: app.job?.budget,
-                                  budget_type: app.job?.budget_type,
-                                  duration: app.job?.duration,
-                                  client_name: app.job?.client_name,
-                                  client_verified: true,
-                                  image: app.job?.image,
-                                  required_skills: []
-                                }
-                                setSelectedJob(job)
-                                setActiveTab('jobboard')
-                              }}
-                              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                            >
-                              View
-                            </button>
-                            {app.status !== 'withdrawn' && (
-                              <button
-                                onClick={() => handleWithdraw(app.id)}
-                                className="text-red-600 hover:text-red-800 text-sm font-medium"
-                              >
-                                Withdraw
-                              </button>
-                            )}
-                          </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {filteredApplications.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                          No applications found
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      filteredApplications.map(app => (
+                        <tr key={app.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              {app.job?.image && (
+                                <img src={app.job.image} alt="" className="w-12 h-12 object-cover rounded-lg" />
+                              )}
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{app.job?.title}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{app.job?.client_name}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{app.job?.budget || 'Contact'}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{app.job?.location}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${app.status === 'withdrawn'
+                              ? 'bg-red-100 text-red-800'
+                              : app.status === 'hired'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-blue-100 text-blue-800'
+                              }`}>
+                              {app.status === 'withdrawn' ? 'Withdrawn' : app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {new Date(app.applied_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  const job = jobs.find(j => j.id === app.job_id) || {
+                                    id: app.job_id,
+                                    title: app.job?.title,
+                                    description: app.job?.description,
+                                    location: app.job?.location,
+                                    budget: app.job?.budget,
+                                    budget_type: app.job?.budget_type,
+                                    duration: app.job?.duration,
+                                    client_name: app.job?.client_name,
+                                    client_verified: true,
+                                    image: app.job?.image,
+                                    required_skills: []
+                                  }
+                                  setSelectedJob(job)
+                                  setActiveTab('jobboard')
+                                }}
+                                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                              >
+                                View
+                              </button>
+                              {app.status !== 'withdrawn' && (
+                                <button
+                                  onClick={() => handleWithdraw(app.id)}
+                                  className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                >
+                                  Withdraw
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
+          )
+        }
 
-        {activeTab === 'invitations' && (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-500">
-            No invitations yet
-          </div>
-        )}
-      </div>
-    </div>
+        {
+          activeTab === 'invitations' && (
+            <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-500">
+              No invitations yet
+            </div>
+          )
+        }
+      </div >
+    </div >
   )
 }

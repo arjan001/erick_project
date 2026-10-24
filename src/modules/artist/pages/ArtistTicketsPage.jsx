@@ -171,6 +171,33 @@ export default function ArtistTicketsPage() {
           .eq('id', selectedTicket.id)
       }
 
+      // Send notification to all admin users
+      try {
+        const { data: adminUsers } = await supabase
+          .from('users')
+          .select('id')
+          .eq('role', 'admin')
+
+        if (adminUsers && adminUsers.length > 0) {
+          for (const admin of adminUsers) {
+            await notificationService.create({
+              user_id: admin.id,
+              type: 'ticket_response',
+              title: 'User Response to Ticket',
+              message: `User ${user.full_name} responded to ticket #${selectedTicket.ticket_number}`,
+              link: '/Admin/Tickets',
+              metadata: {
+                ticket_id: selectedTicket.id,
+                ticket_number: selectedTicket.ticket_number,
+                user_id: user.id
+              }
+            })
+          }
+        }
+      } catch (notifErr) {
+        console.error('Error sending admin notification:', notifErr)
+      }
+
       setNewResponse('')
       setShowResponseModal(false)
       fetchTickets()
