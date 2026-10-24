@@ -382,7 +382,9 @@ export default function CheckoutPage() {
                   {settings.enableMpesa && (
                     <option value="mpesa">M-Pesa - Mobile Payment</option>
                   )}
-                  <option value="card">Card - Visa / Mastercard</option>
+                  {settings.enableCard && (
+                    <option value="card">Card - Visa / Mastercard</option>
+                  )}
                 </select>
               </div>
 
