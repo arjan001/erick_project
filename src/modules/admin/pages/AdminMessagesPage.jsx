@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import { MessageSquare, Search, Send, Trash2, User, Plus, X, Paperclip, Clock, CheckCircle2, Mic, Square, Trash2 as TrashIcon } from 'lucide-react'
 import notificationService from '@/shared/services/notificationService'
+import { auditService } from '@/services/auditService'
 
 export default function AdminMessagesPage() {
   const { user } = useAuth()
@@ -83,7 +84,15 @@ export default function AdminMessagesPage() {
       )
 
       setConversations(conversationsWithMessages)
+      
+      await auditService.log({
+        action: 'read',
+        entity_type: 'conversations',
+        module_name: 'admin',
+        metadata: { count: conversationsWithMessages?.length || 0 }
+      })
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'read_messages' })
       console.error('Error fetching messages:', err)
       error('Error', 'Failed to fetch messages')
     } finally {
@@ -291,7 +300,12 @@ export default function AdminMessagesPage() {
       await supabase.from('conversations').delete().eq('id', conversationId)
       setConversations(prev => prev.filter(c => c.id !== conversationId))
       if (selectedId === conversationId) setSelectedId(null)
+      
+      await auditService.logDelete('conversations', conversationId, 'admin', { 
+        message_count: conv.messages.length 
+      })
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'delete_conversation', conversation_id })
       console.error('Error deleting conversation:', err)
       error('Failed', 'Failed to delete conversation')
     }
