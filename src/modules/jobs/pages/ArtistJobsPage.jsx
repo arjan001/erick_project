@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Job, Project, Application } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
@@ -10,6 +10,7 @@ export default function ArtistJobsPage() {
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
   const { success, error } = useToast()
+  const [searchParams] = useSearchParams()
 
   const [activeTab, setActiveTab] = useState('jobboard') // jobboard, applications, invitations
   const [jobs, setJobs] = useState([])
@@ -51,6 +52,23 @@ export default function ArtistJobsPage() {
     if (!user) return
     loadData()
   }, [activeTab])
+
+  // Handle URL params for direct job selection from dashboard
+  useEffect(() => {
+    const jobId = searchParams.get('jobId')
+    const isProject = searchParams.get('isProject') === 'true'
+    
+    if (jobId && jobs.length > 0) {
+      const job = jobs.find(j => j.id === jobId)
+      if (job) {
+        setSelectedJob(job)
+        // If it's a project with roles, auto-select first role
+        if (isProject && job.discipline && job.discipline.length > 0) {
+          setSelectedRole(job.discipline[0])
+        }
+      }
+    }
+  }, [searchParams, jobs])
 
   const loadData = async () => {
     setLoading(true)

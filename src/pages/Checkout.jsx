@@ -37,6 +37,7 @@ export default function CheckoutPage() {
   const [cardDeclined, setCardDeclined] = useState(false)
   const [notification, setNotification] = useState(null)
   const [mpesaCheckoutId, setMpesaCheckoutId] = useState(null)
+  const [fieldErrors, setFieldErrors] = useState({})
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type })
@@ -97,23 +98,27 @@ export default function CheckoutPage() {
   }
 
   const validateCustomer = () => {
-    if (!customer.name.trim()) return 'Enter your full name.'
-    if (!/^\S+@\S+\.\S+$/.test(customer.email)) return 'Enter a valid email address.'
-    if (customer.phone.replace(/\D/g, '').length < 9) return 'Enter a valid phone number.'
+    const errors = {}
+    if (!customer.name.trim()) errors.name = 'Enter your full name.'
+    if (!/^\S+@\S+\.\S+$/.test(customer.email)) errors.email = 'Enter a valid email address.'
+    if (customer.phone.replace(/\D/g, '').length < 9) errors.phone = 'Enter a valid phone number.'
     if (totals.needsShipping && (!customer.address.trim() || !customer.city.trim())) {
-      return 'Enter your delivery address and town/city.'
+      errors.address = 'Enter your delivery address and town/city.'
     }
-    return null
+    setFieldErrors(errors)
+    return Object.keys(errors).length > 0 ? Object.values(errors)[0] : null
   }
 
   const validateCard = () => {
+    const errors = {}
     if (method === 'card') {
-      if (!card.name.trim()) return 'Enter cardholder name.'
-      if (!card.number || card.number.length < 13) return 'Enter valid card number.'
-      if (!card.expMonth || !card.expYear) return 'Enter expiry date.'
-      if (!card.cvv || card.cvv.length < 3) return 'Enter CVV.'
+      if (!card.name.trim()) errors.cardName = 'Enter cardholder name.'
+      if (!card.number || card.number.length < 13) errors.cardNumber = 'Enter valid card number.'
+      if (!card.expMonth || !card.expYear) errors.cardExpiry = 'Enter expiry date.'
+      if (!card.cvv || card.cvv.length < 3) errors.cardCvv = 'Enter CVV.'
     }
-    return null
+    setFieldErrors(errors)
+    return Object.keys(errors).length > 0 ? Object.values(errors)[0] : null
   }
 
   const handleSubmit = async (e) => {
@@ -337,21 +342,53 @@ export default function CheckoutPage() {
           <h2 className="text-lg font-bold text-black">Contact & delivery</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Field label="Full name">
-              <input className={inputCls} value={customer.name} onChange={(e) => set({ name: e.target.value })} disabled={busy} />
+              <input 
+                className={`${inputCls} ${fieldErrors.name ? 'border-red-500 ring-2 ring-red-200' : ''}`} 
+                value={customer.name} 
+                onChange={(e) => { set({ name: e.target.value }); setFieldErrors({...fieldErrors, name: ''}) }} 
+                disabled={busy} 
+              />
+              {fieldErrors.name && <p className="text-xs text-red-600 mt-1">{fieldErrors.name}</p>}
             </Field>
             <Field label="Email">
-              <input type="email" className={inputCls} value={customer.email} onChange={(e) => set({ email: e.target.value })} disabled={busy} />
+              <input 
+                type="email" 
+                className={`${inputCls} ${fieldErrors.email ? 'border-red-500 ring-2 ring-red-200' : ''}`} 
+                value={customer.email} 
+                onChange={(e) => { set({ email: e.target.value }); setFieldErrors({...fieldErrors, email: ''}) }} 
+                disabled={busy} 
+              />
+              {fieldErrors.email && <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>}
             </Field>
             <Field label="Phone (M-Pesa number)">
-              <input className={inputCls} placeholder="07XX XXX XXX" value={customer.phone} onChange={(e) => set({ phone: e.target.value })} disabled={busy} />
+              <input 
+                className={`${inputCls} ${fieldErrors.phone ? 'border-red-500 ring-2 ring-red-200' : ''}`} 
+                placeholder="07XX XXX XXX" 
+                value={customer.phone} 
+                onChange={(e) => { set({ phone: e.target.value }); setFieldErrors({...fieldErrors, phone: ''}) }} 
+                disabled={busy} 
+              />
+              {fieldErrors.phone && <p className="text-xs text-red-600 mt-1">{fieldErrors.phone}</p>}
             </Field>
             {totals.needsShipping && (
               <>
                 <Field label="Delivery address">
-                  <input className={inputCls} value={customer.address} onChange={(e) => set({ address: e.target.value })} disabled={busy} />
+                  <input 
+                    className={`${inputCls} ${fieldErrors.address ? 'border-red-500 ring-2 ring-red-200' : ''}`} 
+                    value={customer.address} 
+                    onChange={(e) => { set({ address: e.target.value }); setFieldErrors({...fieldErrors, address: ''}) }} 
+                    disabled={busy} 
+                  />
+                  {fieldErrors.address && <p className="text-xs text-red-600 mt-1">{fieldErrors.address}</p>}
                 </Field>
                 <Field label="Town / city">
-                  <input className={inputCls} value={customer.city} onChange={(e) => set({ city: e.target.value })} disabled={busy} />
+                  <input 
+                    className={`${inputCls} ${fieldErrors.address ? 'border-red-500 ring-2 ring-red-200' : ''}`} 
+                    value={customer.city} 
+                    onChange={(e) => { set({ city: e.target.value }); setFieldErrors({...fieldErrors, address: ''}) }} 
+                    disabled={busy} 
+                  />
+                  {fieldErrors.address && <p className="text-xs text-red-600 mt-1">{fieldErrors.address}</p>}
                 </Field>
                 <Field label="County">
                   <input className={inputCls} value={customer.county} onChange={(e) => set({ county: e.target.value })} disabled={busy} />
@@ -411,29 +448,64 @@ export default function CheckoutPage() {
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <Field label="Cardholder name">
-                        <input className={inputCls} value={card.name} onChange={(e) => setCardField({ name: e.target.value })} disabled={busy} placeholder="Name on card" />
+                        <input 
+                          className={`${inputCls} ${fieldErrors.cardName ? 'border-red-500 ring-2 ring-red-200' : ''}`} 
+                          value={card.name} 
+                          onChange={(e) => { setCardField({ name: e.target.value }); setFieldErrors({...fieldErrors, cardName: ''}) } } 
+                          disabled={busy} 
+                          placeholder="Name on card" 
+                        />
+                        {fieldErrors.cardName && <p className="text-xs text-red-600 mt-1">{fieldErrors.cardName}</p>}
                       </Field>
                       <Field label="Card number">
-                        <input className={inputCls} value={card.number} onChange={handleCardNumberChange} disabled={busy} placeholder="1234 5678 9012 3456" maxLength={16} />
+                        <input 
+                          className={`${inputCls} ${fieldErrors.cardNumber ? 'border-red-500 ring-2 ring-red-200' : ''}`} 
+                          value={card.number} 
+                          onChange={handleCardNumberChange} 
+                          disabled={busy} 
+                          placeholder="1234 5678 9012 3456" 
+                          maxLength={16} 
+                        />
+                        {fieldErrors.cardNumber && <p className="text-xs text-red-600 mt-1">{fieldErrors.cardNumber}</p>}
                       </Field>
                       <Field label="Expiry month">
-                        <select className={inputCls} value={card.expMonth} onChange={(e) => setCardField({ expMonth: e.target.value })} disabled={busy}>
+                        <select 
+                          className={`${inputCls} ${fieldErrors.cardExpiry ? 'border-red-500 ring-2 ring-red-200' : ''}`} 
+                          value={card.expMonth} 
+                          onChange={(e) => { setCardField({ expMonth: e.target.value }); setFieldErrors({...fieldErrors, cardExpiry: ''}) } } 
+                          disabled={busy}
+                        >
                           <option value="">MM</option>
                           {Array.from({ length: 12 }, (_, i) => (
                             <option key={i + 1} value={String(i + 1).padStart(2, '0')}>{String(i + 1).padStart(2, '0')}</option>
                           ))}
                         </select>
+                        {fieldErrors.cardExpiry && <p className="text-xs text-red-600 mt-1">{fieldErrors.cardExpiry}</p>}
                       </Field>
                       <Field label="Expiry year">
-                        <select className={inputCls} value={card.expYear} onChange={(e) => setCardField({ expYear: e.target.value })} disabled={busy}>
+                        <select 
+                          className={`${inputCls} ${fieldErrors.cardExpiry ? 'border-red-500 ring-2 ring-red-200' : ''}`} 
+                          value={card.expYear} 
+                          onChange={(e) => { setCardField({ expYear: e.target.value }); setFieldErrors({...fieldErrors, cardExpiry: ''}) } } 
+                          disabled={busy}
+                        >
                           <option value="">YY</option>
                           {Array.from({ length: 10 }, (_, i) => (
                             <option key={i} value={String(new Date().getFullYear() + i).slice(-2)}>{String(new Date().getFullYear() + i)}</option>
                           ))}
                         </select>
+                        {fieldErrors.cardExpiry && <p className="text-xs text-red-600 mt-1">{fieldErrors.cardExpiry}</p>}
                       </Field>
                       <Field label="CVV">
-                        <input className={inputCls} value={card.cvv} onChange={(e) => setCardField({ cvv: e.target.value.replace(/\D/g, '').slice(0, 4) })} disabled={busy} placeholder="123" maxLength={4} />
+                        <input 
+                          className={`${inputCls} ${fieldErrors.cardCvv ? 'border-red-500 ring-2 ring-red-200' : ''}`} 
+                          value={card.cvv} 
+                          onChange={(e) => { setCardField({ cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }); setFieldErrors({...fieldErrors, cardCvv: ''}) } } 
+                          disabled={busy} 
+                          placeholder="123" 
+                          maxLength={4} 
+                        />
+                        {fieldErrors.cardCvv && <p className="text-xs text-red-600 mt-1">{fieldErrors.cardCvv}</p>}
                       </Field>
                     </div>
                   </div>

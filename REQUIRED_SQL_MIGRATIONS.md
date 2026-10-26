@@ -31,6 +31,12 @@ Please run these migrations in Supabase SQL Editor in the order listed:
 - Allows users to send messages without permission errors
 - Creates permissive policies for authenticated users
 
+## 6. Add Applied Role to Applications
+**File:** `database/migrations/add_applied_role_to_applications.sql`
+- Adds applied_role column to job_applications table
+- Allows artists to apply to specific roles in production jobs
+- Adds index for faster queries on applied_role
+
 ## How to Run:
 1. Go to your Supabase project
 2. Navigate to SQL Editor
