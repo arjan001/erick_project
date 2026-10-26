@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { CreditCard, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, DollarSign, Users, Check, MessageSquare, Star, Zap, BarChart3 } from 'lucide-react'
 import { createPageUrl } from '@/shared/utils/routing'
 import { useToast } from '@/hooks/useToast.jsx'
+import { auditService } from '@/services/auditService'
 
 export default function AdminSubscriptionSettingsPage() {
   const navigate = useNavigate()
@@ -42,7 +43,15 @@ export default function AdminSubscriptionSettingsPage() {
     try {
       const data = await SubscriptionPackage.list()
       setPackages(data)
+      
+      await auditService.log({
+        action: 'read',
+        entity_type: 'subscription_packages',
+        module_name: 'admin',
+        metadata: { count: data?.length || 0 }
+      })
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'read_packages' })
       toastError('Load Failed', 'Failed to load packages')
     } finally {
       setLoading(false)
@@ -66,7 +75,10 @@ export default function AdminSubscriptionSettingsPage() {
       setShowModal(false)
       resetForm()
       fetchPackages()
+      
+      await auditService.logCreate('subscription_packages', newPackage.id, 'admin', { packageForm })
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'create_package' })
       toastError('Create Failed', 'Failed to create package')
     }
   }
@@ -99,8 +111,10 @@ export default function AdminSubscriptionSettingsPage() {
     try {
       await SubscriptionPackage.delete(id)
       success('Package Deleted', 'Subscription package deleted successfully')
+      await auditService.logDelete('subscription_packages', id, 'admin')
       fetchPackages()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'delete_package', package_id: id })
       toastError('Delete Failed', 'Failed to delete package')
     }
   }
