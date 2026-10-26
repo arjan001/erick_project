@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, Star, Upload } from 'lucide-react'
 import { useToast } from '@/hooks/useToast.jsx'
+import { auditService } from '@/services/auditService'
 
 export default function AdminCategoriesPage() {
   const { success, error: toastError } = useToast()
@@ -18,12 +19,17 @@ export default function AdminCategoriesPage() {
 
   const fetchData = async () => {
     try {
-
       const all = await ContentCategory.list('display_order', 100)
-
       setCategories(all || [])
+      
+      await auditService.log({
+        action: 'read',
+        entity_type: 'content_categories',
+        module_name: 'admin',
+        metadata: { count: all?.length || 0 }
+      })
     } catch (err) {
-
+      await auditService.logError(err, 'admin', { action: 'read_categories' })
       toastError('Load Failed', 'Failed to load categories')
     } finally {
       setLoading(false)
@@ -60,13 +66,14 @@ export default function AdminCategoriesPage() {
         await ContentCategory.update(editing.id, dataToSave)
         success('Updated', 'Category updated')
       } else {
-        await ContentCategory.create(dataToSave)
+        const newCat = await ContentCategory.create(dataToSave)
         success('Created', 'Category created')
+        await auditService.logCreate('content_categories', newCat.id, 'admin', { name: form.name })
       }
       setShowModal(false)
       fetchData()
     } catch (err) {
-
+      await auditService.logError(err, 'admin', { action: 'save_category', editing_id: editing?.id })
       toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`)
     }
   }
@@ -76,8 +83,10 @@ export default function AdminCategoriesPage() {
     try {
       await ContentCategory.delete(id)
       success('Deleted', 'Category deleted')
+      await auditService.logDelete('content_categories', id, 'admin')
       fetchData()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'delete_category', category_id: id })
       toastError('Delete Failed', 'Failed to delete category')
     }
   }
