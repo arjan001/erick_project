@@ -37,6 +37,13 @@ Please run these migrations in Supabase SQL Editor in the order listed:
 - Allows artists to apply to specific roles in production jobs
 - Adds index for faster queries on applied_role
 
+## 7. Create System Settings Table
+**File:** `database/migrations/create_system_settings_table.sql`
+- Creates system_settings table for general application configuration
+- Stores key-value pairs for system-wide settings
+- Includes default settings for site, registration, content, notifications, security, subscription, and maintenance
+- Fixes 404 error in AdminGeneralSettingsPage
+
 ## How to Run:
 1. Go to your Supabase project
 2. Navigate to SQL Editor

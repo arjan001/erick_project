@@ -219,7 +219,7 @@ export default function AdminGeneralSettingsPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl space-y-6">
+      <div className="w-full space-y-6">
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center"><span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mr-2"><Globe className="w-4 h-4" /></span>Site Settings</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
