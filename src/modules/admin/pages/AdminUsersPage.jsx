@@ -3,6 +3,7 @@ import { User as UserEntity } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Search, Eye, Trash2, Shield, User, Mail, X, ChevronLeft, ChevronRight, Ban, CheckCircle, AlertTriangle } from 'lucide-react'
+import { auditService } from '@/services/auditService'
 
 const PAGE_SIZE = 10
 
@@ -39,9 +40,18 @@ export default function AdminUsersPage() {
       // Filter only admin users
       const adminUsers = usersData.filter(u => u.role === 'admin')
       setUsers(adminUsers || [])
+      
+      // Log audit event for viewing users
+      await auditService.log({
+        action: 'read',
+        entity_type: 'users',
+        module_name: 'admin',
+        metadata: { count: adminUsers.length, role: 'admin' }
+      })
     } catch (error) {
       console.error('Error fetching users:', error)
       setUsers([])
+      await auditService.logError(error, 'admin', { action: 'read_users' })
     } finally {
       setLoading(false)
     }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { analyticsApi } from '../api/analytics.api'
-import { Users, Globe, Activity, AlertTriangle, TrendingUp, DollarSign, Clock, Eye, MapPin, BarChart3, LineChart, PieChart } from 'lucide-react'
+import { Users, Globe, Activity, AlertTriangle, TrendingUp, DollarSign, Clock, Eye, MapPin, BarChart3, LineChart, PieChart, Shield, Lock } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, LineChart as RechartsLineChart, Line } from 'recharts'
 
 const COLORS = ['#1a1a1a', '#6b7280', '#d1d5db', '#374151', '#3b82f6', '#10b981', '#f59e0b', '#ef4444']
@@ -37,6 +37,7 @@ export default function AdminAnalyticsPage() {
   const [subscriptionStats, setSubscriptionStats] = useState(null)
   const [overviewStats, setOverviewStats] = useState(null)
   const [transactionalStats, setTransactionalStats] = useState(null)
+  const [securityStats, setSecurityStats] = useState(null)
 
   useEffect(() => {
     fetchAnalyticsData()
@@ -64,7 +65,8 @@ export default function AdminAnalyticsPage() {
         recentErrorsData,
         subStats,
         overview,
-        transactional
+        transactional,
+        securityStats
       ] = await Promise.all([
         analyticsApi.getLiveUsers(),
         analyticsApi.getLiveUserCount(),
@@ -76,7 +78,8 @@ export default function AdminAnalyticsPage() {
         analyticsApi.getErrors(startDate, endDate, 'critical'),
         analyticsApi.getSubscriptionStats(),
         analyticsApi.getOverviewStats(startDate, endDate),
-        analyticsApi.getTransactionalStats(startDate, endDate)
+        analyticsApi.getTransactionalStats(startDate, endDate),
+        analyticsApi.getSecurityStats(startDate, endDate)
       ])
 
       setLiveUsers(liveUsersData)
@@ -89,6 +92,7 @@ export default function AdminAnalyticsPage() {
       setSubscriptionStats(subStats)
       setOverviewStats(overview)
       setTransactionalStats(transactional)
+      setSecurityStats(securityStats)
     } catch (err) {
       
     } finally {
@@ -270,7 +274,7 @@ export default function AdminAnalyticsPage() {
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-600">Bounce Rate</span>
-                  <span className="font-medium text-gray-800">Calculating...</span>
+                  <span className="font-medium text-gray-800">{sessionStats?.bounceRate || 0}%</span>
                 </div>
               </div>
             </div>
@@ -288,17 +292,10 @@ export default function AdminAnalyticsPage() {
                   <span className="text-xs font-bold text-gray-400 w-4">{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-medium text-gray-900 truncate">{page.path}</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      {page.top_countries?.slice(0, 3).map((country, idx) => (
-                        <span key={idx} className="text-xs text-gray-500 flex items-center gap-1">
-                          {getCountryFlag(country.code)} {country.name}
-                        </span>
-                      ))}
-                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">{page.title || page.path}</div>
                   </div>
                   <div className="text-right">
                     <div className="text-xs font-semibold text-gray-800">{page.count} views</div>
-                    <div className="text-xs text-gray-400">{page.unique_users || 0} users</div>
                   </div>
                 </div>
               ))}
@@ -508,6 +505,78 @@ export default function AdminAnalyticsPage() {
           ) : (
             <div className="h-[150px] flex items-center justify-center text-sm text-gray-400">No application data</div>
           )}
+        </div>
+      </div>
+
+      {/* Security Monitoring */}
+      <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            Security Monitoring
+          </h3>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full" />
+              <span className="text-xs text-gray-500">{securityStats?.criticalEvents || 0} Critical</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+              <span className="text-xs text-gray-500">{securityStats?.warningEvents || 0} Warnings</span>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Suspicious IPs */}
+          <div>
+            <h4 className="text-xs font-semibold text-gray-700 mb-3">Suspicious IP Activity</h4>
+            <div className="space-y-2">
+              {securityStats?.suspiciousIPs?.length > 0 ? (
+                securityStats.suspiciousIPs.slice(0, 5).map((item, i) => (
+                  <div key={i} className="p-2 rounded bg-red-50 border border-red-100">
+                    <div className="text-xs font-medium text-red-900">User ID: {item.userId}</div>
+                    <div className="text-xs text-red-700">{item.ipCount} IPs, {item.actionCount} actions</div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-gray-400">No suspicious IP activity detected</div>
+              )}
+            </div>
+          </div>
+          {/* Module Activity */}
+          <div>
+            <h4 className="text-xs font-semibold text-gray-700 mb-3">Activity by Module</h4>
+            <div className="space-y-2">
+              {securityStats?.moduleActivity?.slice(0, 5).map((item, i) => (
+                <div key={i} className="flex items-center justify-between text-xs">
+                  <span className="text-gray-600 capitalize">{item.module}</span>
+                  <span className="font-medium text-gray-800">{item.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Audit Summary */}
+          <div>
+            <h4 className="text-xs font-semibold text-gray-700 mb-3">Audit Summary</h4>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-600">Total Audits</span>
+                <span className="font-medium text-gray-800">{securityStats?.totalAudits || 0}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-600">Suspicious Routes</span>
+                <span className="font-medium text-red-600">{securityStats?.suspiciousRoutes || 0}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-600">Critical Events</span>
+                <span className="font-medium text-red-600">{securityStats?.criticalEvents || 0}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-600">Warning Events</span>
+                <span className="font-medium text-yellow-600">{securityStats?.warningEvents || 0}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
