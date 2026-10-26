@@ -110,8 +110,45 @@ export default function ArtistTicketsPage() {
         title: 'Ticket Submitted',
         message: `Your ticket ${ticketNumber} has been submitted successfully`,
         actionUrl: '/ArtistTickets',
+        link_url: '/ArtistTickets',
         metadata: { ticket_number: ticketNumber, ticket_id: data.id }
       })
+
+      // Send email notification to user
+      try {
+        const emailService = (await import('@/shared/services/emailService')).default
+        await emailService.sendEmail({
+          to: user.email,
+          subject: `Support Ticket ${ticketNumber} Submitted Successfully`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #333;">Support Ticket Submitted</h2>
+              <p>Hello ${user.full_name || 'User'},</p>
+              <p>Your support ticket has been submitted successfully.</p>
+              <p><strong>Ticket Number:</strong> ${ticketNumber}</p>
+              <p><strong>Subject:</strong> ${formData.title}</p>
+              <p><strong>Category:</strong> ${formData.category}</p>
+              <p><strong>Priority:</strong> ${formData.priority}</p>
+              <p>Our team will review your ticket and respond as soon as possible.</p>
+              <p>You can track the status of your ticket by clicking the button below:</p>
+              <a href="${window.location.origin}/ArtistTickets" style="display: inline-block; padding: 12px 24px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">View Ticket</a>
+              <p style="margin-top: 20px; color: #666; font-size: 12px;">This is an automated email. Please do not reply.</p>
+            </div>
+          `,
+          text: `Your support ticket ${ticketNumber} has been submitted successfully. View it at: ${window.location.origin}/ArtistTickets`
+        })
+
+        // Update email notification sent flag
+        await supabase
+          .from('support_tickets')
+          .update({ 
+            email_notification_sent: true,
+            last_email_sent_at: new Date().toISOString()
+          })
+          .eq('id', data.id)
+      } catch (emailErr) {
+        console.error('Error sending email notification:', emailErr)
+      }
 
       // Create notification for admin users
       try {
@@ -175,27 +212,49 @@ export default function ArtistTicketsPage() {
       try {
         const { data: adminUsers } = await supabase
           .from('users')
-          .select('id')
+          .select('id, email')
           .eq('role', 'admin')
 
         if (adminUsers && adminUsers.length > 0) {
           for (const admin of adminUsers) {
-            await notificationService.create({
-              user_id: admin.id,
-              type: 'ticket_response',
-              title: 'User Response to Ticket',
-              message: `User ${user.full_name} responded to ticket #${selectedTicket.ticket_number}`,
-              link: '/Admin/Tickets',
-              metadata: {
-                ticket_id: selectedTicket.id,
-                ticket_number: selectedTicket.ticket_number,
-                user_id: user.id
-              }
+            await notificationService.createNotification({
+              userId: admin.id,
+              type: 'ticket',
+              title: 'New Ticket Response',
+              message: `User ${user.full_name} responded to ticket ${selectedTicket.ticket_number}`,
+              actionUrl: '/Admin/Tickets',
+              link_url: '/Admin/Tickets',
+              metadata: { ticket_number: selectedTicket.ticket_number, ticket_id: selectedTicket.id, user_id: user.id }
             })
+          }
+
+          // Send email to all admins
+          try {
+            const emailService = (await import('@/shared/services/emailService')).default
+            const adminEmails = adminUsers.map(a => a.email).filter(Boolean)
+            await emailService.sendEmail({
+              to: adminEmails,
+              subject: `New Response to Ticket ${selectedTicket.ticket_number}`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <h2 style="color: #333;">New Ticket Response</h2>
+                  <p>Hello Admin,</p>
+                  <p>User ${user.full_name} has responded to support ticket ${selectedTicket.ticket_number}.</p>
+                  <p><strong>Response:</strong></p>
+                  <p style="background: #f5f5f5; padding: 15px; border-radius: 5px;">${newResponse}</p>
+                  <p>You can view the full conversation by clicking the button below:</p>
+                  <a href="${window.location.origin}/Admin/Tickets" style="display: inline-block; padding: 12px 24px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">View Ticket</a>
+                  <p style="margin-top: 20px; color: #666; font-size: 12px;">This is an automated email. Please do not reply.</p>
+                </div>
+              `,
+              text: `User ${user.full_name} responded to ticket ${selectedTicket.ticket_number}. View it at: ${window.location.origin}/Admin/Tickets`
+            })
+          } catch (emailErr) {
+            console.error('Error sending admin email notification:', emailErr)
           }
         }
       } catch (notifErr) {
-        console.error('Error sending admin notification:', notifErr)
+        console.error('Error creating admin notification:', notifErr)
       }
 
       setNewResponse('')

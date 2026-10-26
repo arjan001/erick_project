@@ -126,13 +126,43 @@ export default function AdminTicketsPage() {
             title: 'Admin Response to Your Ticket',
             message: `An admin has responded to your support ticket #${selectedTicket.ticket_number}`,
             link: '/SupportTickets',
+            link_url: '/SupportTickets',
             metadata: {
               ticket_id: selectedTicket.id,
               ticket_number: selectedTicket.ticket_number
             }
           })
+
+          // Send email notification
+          const emailService = (await import('@/shared/services/emailService')).default
+          await emailService.sendEmail({
+            to: selectedTicket.user?.email,
+            subject: `Response to Your Support Ticket #${selectedTicket.ticket_number}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #333;">Support Ticket Response</h2>
+                <p>Hello,</p>
+                <p>An admin has responded to your support ticket #${selectedTicket.ticket_number}.</p>
+                <p><strong>Response:</strong></p>
+                <p style="background: #f5f5f5; padding: 15px; border-radius: 5px;">${newResponse}</p>
+                <p>You can view the full conversation and respond by clicking the button below:</p>
+                <a href="${window.location.origin}/SupportTickets" style="display: inline-block; padding: 12px 24px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">View Ticket</a>
+                <p style="margin-top: 20px; color: #666; font-size: 12px;">This is an automated email. Please do not reply.</p>
+              </div>
+            `,
+            text: `An admin has responded to your support ticket #${selectedTicket.ticket_number}. View it at: ${window.location.origin}/SupportTickets`
+          })
+
+          // Update email notification sent flag
+          await supabase
+            .from('support_tickets')
+            .update({ 
+              email_notification_sent: true,
+              last_email_sent_at: new Date().toISOString()
+            })
+            .eq('id', selectedTicket.id)
         } catch (notifErr) {
-          console.error('Error sending notification:', notifErr)
+          console.error('Error sending notification/email:', notifErr)
         }
       }
 

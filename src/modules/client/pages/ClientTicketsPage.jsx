@@ -107,14 +107,51 @@ export default function ClientTicketsPage() {
         title: 'Ticket Submitted',
         message: `Your ticket ${ticketNumber} has been submitted successfully`,
         link: '/SupportTickets',
+        link_url: '/SupportTickets',
         metadata: { ticket_number: ticketNumber, ticket_id: data.id }
       })
+
+      // Send email notification to user
+      try {
+        const emailService = (await import('@/shared/services/emailService')).default
+        await emailService.sendEmail({
+          to: user.email,
+          subject: `Support Ticket ${ticketNumber} Submitted Successfully`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #333;">Support Ticket Submitted</h2>
+              <p>Hello ${user.full_name || 'User'},</p>
+              <p>Your support ticket has been submitted successfully.</p>
+              <p><strong>Ticket Number:</strong> ${ticketNumber}</p>
+              <p><strong>Subject:</strong> ${formData.subject}</p>
+              <p><strong>Category:</strong> ${formData.category}</p>
+              <p><strong>Priority:</strong> ${formData.priority}</p>
+              <p>Our team will review your ticket and respond as soon as possible.</p>
+              <p>You can track the status of your ticket by clicking the button below:</p>
+              <a href="${window.location.origin}/SupportTickets" style="display: inline-block; padding: 12px 24px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">View Ticket</a>
+              <p style="margin-top: 20px; color: #666; font-size: 12px;">This is an automated email. Please do not reply.</p>
+            </div>
+          `,
+          text: `Your support ticket ${ticketNumber} has been submitted successfully. View it at: ${window.location.origin}/SupportTickets`
+        })
+
+        // Update email notification sent flag
+        await supabase
+          .from('support_tickets')
+          .update({ 
+            email_notification_sent: true,
+            last_email_sent_at: new Date().toISOString()
+          })
+          .eq('id', data.id)
+      } catch (emailErr) {
+        console.error('Error sending email notification:', emailErr)
+      }
 
       // Create notification for all admin users
       try {
         const { data: adminUsers } = await supabase
           .from('users')
-          .select('id')
+          .select('id, email')
           .eq('role', 'admin')
 
         if (adminUsers && adminUsers.length > 0) {
@@ -125,8 +162,36 @@ export default function ClientTicketsPage() {
               title: 'New Support Ticket',
               message: `New ticket ${ticketNumber} submitted by ${user.full_name}`,
               link: '/Admin/Tickets',
+              link_url: '/Admin/Tickets',
               metadata: { ticket_number: ticketNumber, ticket_id: data.id, user_id: user.id }
             })
+          }
+
+          // Send email to all admins
+          try {
+            const emailService = (await import('@/shared/services/emailService')).default
+            const adminEmails = adminUsers.map(a => a.email).filter(Boolean)
+            await emailService.sendEmail({
+              to: adminEmails,
+              subject: `New Support Ticket ${ticketNumber} from ${user.full_name}`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <h2 style="color: #333;">New Support Ticket</h2>
+                  <p>Hello Admin,</p>
+                  <p>A new support ticket has been submitted by ${user.full_name}.</p>
+                  <p><strong>Ticket Number:</strong> ${ticketNumber}</p>
+                  <p><strong>Subject:</strong> ${formData.subject}</p>
+                  <p><strong>Category:</strong> ${formData.category}</p>
+                  <p><strong>Priority:</strong> ${formData.priority}</p>
+                  <p>You can view and respond to this ticket by clicking the button below:</p>
+                  <a href="${window.location.origin}/Admin/Tickets" style="display: inline-block; padding: 12px 24px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">View Ticket</a>
+                  <p style="margin-top: 20px; color: #666; font-size: 12px;">This is an automated email. Please do not reply.</p>
+                </div>
+              `,
+              text: `New support ticket ${ticketNumber} from ${user.full_name}. View at: ${window.location.origin}/Admin/Tickets`
+            })
+          } catch (emailErr) {
+            console.error('Error sending admin email notification:', emailErr)
           }
         }
       } catch (notifErr) {
@@ -160,6 +225,94 @@ export default function ClientTicketsPage() {
     } catch (err) {
       console.error('Error withdrawing ticket:', err)
       error('Failed', 'Failed to withdraw ticket')
+    }
+  }
+
+  const [newResponse, setNewResponse] = useState('')
+  const [showResponseModal, setShowResponseModal] = useState(false)
+  const [submittingResponse, setSubmittingResponse] = useState(false)
+
+  const handleAddResponse = async () => {
+    if (!newResponse.trim()) return
+    setSubmittingResponse(true)
+    try {
+      const { error } = await supabase
+        .from('ticket_responses')
+        .insert({
+          ticket_id: selectedTicket.id,
+          user_id: user?.id,
+          is_admin: false,
+          response: newResponse,
+        })
+
+      if (error) throw error
+
+      // Update ticket status to in_progress if it was open
+      if (selectedTicket.status === 'open') {
+        await supabase
+          .from('support_tickets')
+          .update({ status: 'in_progress' })
+          .eq('id', selectedTicket.id)
+      }
+
+      // Send notification to all admin users
+      try {
+        const { data: adminUsers } = await supabase
+          .from('users')
+          .select('id, email')
+          .eq('role', 'admin')
+
+        if (adminUsers && adminUsers.length > 0) {
+          for (const admin of adminUsers) {
+            await notificationService.create({
+              user_id: admin.id,
+              type: 'ticket',
+              title: 'New Ticket Response',
+              message: `User ${user.full_name} responded to ticket ${selectedTicket.ticket_number}`,
+              link: '/Admin/Tickets',
+              link_url: '/Admin/Tickets',
+              metadata: { ticket_number: selectedTicket.ticket_number, ticket_id: selectedTicket.id, user_id: user.id }
+            })
+          }
+
+          // Send email to all admins
+          try {
+            const emailService = (await import('@/shared/services/emailService')).default
+            const adminEmails = adminUsers.map(a => a.email).filter(Boolean)
+            await emailService.sendEmail({
+              to: adminEmails,
+              subject: `New Response to Ticket ${selectedTicket.ticket_number}`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <h2 style="color: #333;">New Ticket Response</h2>
+                  <p>Hello Admin,</p>
+                  <p>User ${user.full_name} has responded to support ticket ${selectedTicket.ticket_number}.</p>
+                  <p><strong>Response:</strong></p>
+                  <p style="background: #f5f5f5; padding: 15px; border-radius: 5px;">${newResponse}</p>
+                  <p>You can view the full conversation by clicking the button below:</p>
+                  <a href="${window.location.origin}/Admin/Tickets" style="display: inline-block; padding: 12px 24px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">View Ticket</a>
+                  <p style="margin-top: 20px; color: #666; font-size: 12px;">This is an automated email. Please do not reply.</p>
+                </div>
+              `,
+              text: `User ${user.full_name} responded to ticket ${selectedTicket.ticket_number}. View at: ${window.location.origin}/Admin/Tickets`
+            })
+          } catch (emailErr) {
+            console.error('Error sending admin email notification:', emailErr)
+          }
+        }
+      } catch (notifErr) {
+        console.error('Error creating admin notification:', notifErr)
+      }
+
+      setNewResponse('')
+      setShowResponseModal(false)
+      fetchTickets()
+      success('Sent', 'Response sent successfully')
+    } catch (err) {
+      console.error('Error sending response:', err)
+      error('Failed', 'Failed to send response')
+    } finally {
+      setSubmittingResponse(false)
     }
   }
 
@@ -344,6 +497,9 @@ export default function ClientTicketsPage() {
               </div>
             </div>
             <div className="p-4 border-t border-gray-200 flex justify-between">
+              <Button onClick={() => setShowResponseModal(true)} variant="outline">
+                Add Response
+              </Button>
               {selectedTicket.status === 'open' || selectedTicket.status === 'in_progress' ? (
                 <Button onClick={() => handleWithdrawTicket(selectedTicket.id)} variant="destructive">
                   Withdraw Ticket
@@ -352,6 +508,37 @@ export default function ClientTicketsPage() {
                 <div />
               )}
               <Button onClick={() => setSelectedTicket(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Response Modal */}
+      {showResponseModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-2xl">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">Add Response</h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowResponseModal(false)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="p-4">
+              <textarea
+                value={newResponse}
+                onChange={(e) => setNewResponse(e.target.value)}
+                placeholder="Type your response..."
+                rows={6}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+              />
+            </div>
+            <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowResponseModal(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddResponse} disabled={submittingResponse}>
+                {submittingResponse ? 'Sending...' : 'Send Response'}
+              </Button>
             </div>
           </div>
         </div>
