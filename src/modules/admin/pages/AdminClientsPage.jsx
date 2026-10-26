@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Building, Eye, Trash2, Mail, Phone, Briefcase, Edit2, Ban, CheckCircle, User, Calendar, MapPin, Search, X, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
+import { auditService } from '@/services/auditService'
 
 const PAGE_SIZE = 10
 
@@ -51,9 +52,17 @@ export default function AdminClientsPage() {
         })
       )
       setClients(clientsWithJobs || [])
+      
+      await auditService.log({
+        action: 'read',
+        entity_type: 'clients',
+        module_name: 'admin',
+        metadata: { count: clientsWithJobs?.length || 0 }
+      })
     } catch (err) {
       console.error('Error fetching clients:', err)
-      setClients([]) // Set empty array on error instead of showing error
+      setClients([])
+      await auditService.logError(err, 'admin', { action: 'read_clients' })
     } finally {
       setLoading(false)
     }
@@ -67,9 +76,10 @@ export default function AdminClientsPage() {
       await Client.delete(clientId)
       setClients(prev => prev.filter(c => c.id !== clientId))
       success('Deleted', 'Client deleted successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'client.delete', entity_type: 'Client', entity_id: clientId, details: 'Deleted client' }).catch(() => { })
+      
+      await auditService.logDelete('clients', clientId, 'admin')
     } catch (err) {
-
+      await auditService.logError(err, 'admin', { action: 'delete_client', client_id: clientId })
       toastError('Failed', 'Failed to delete client')
     }
   }
@@ -78,8 +88,14 @@ export default function AdminClientsPage() {
     try {
       await Client.update(client.id, { is_suspended: !client.is_suspended })
       success(!client.is_suspended ? 'Suspended' : 'Unsuspended', `Client ${!client.is_suspended ? 'suspended' : 'unsuspended'}`)
+      
+      await auditService.logUpdate('clients', client.id, 'admin', { 
+        action: 'toggle_suspend',
+        is_suspended: !client.is_suspended 
+      })
       fetchClients()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'toggle_suspend', client_id: client.id })
       toastError('Failed', 'Failed to update suspension status')
     }
   }
@@ -88,8 +104,14 @@ export default function AdminClientsPage() {
     try {
       await Client.update(client.id, { is_disabled: !client.is_disabled })
       success(!client.is_disabled ? 'Disabled' : 'Enabled', `Client ${!client.is_disabled ? 'disabled' : 'enabled'}`)
+      
+      await auditService.logUpdate('clients', client.id, 'admin', { 
+        action: 'toggle_disable',
+        is_disabled: !client.is_disabled 
+      })
       fetchClients()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'toggle_disable', client_id: client.id })
       toastError('Failed', 'Failed to update disabled status')
     }
   }

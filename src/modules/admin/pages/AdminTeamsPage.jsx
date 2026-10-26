@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Edit2, Trash2, X, Eye, CheckCircle, AlertCircle, Search, Users, Mail, Calendar, MapPin, Building, ChevronLeft, ChevronRight, UserCheck, UserX } from 'lucide-react'
 import { useToast } from '@/hooks/useToast.jsx'
+import { auditService } from '@/services/auditService'
 
 const STATUS_STYLES = {
   approved: 'bg-green-100 text-green-700 border-green-200',
@@ -32,8 +33,15 @@ export default function AdminTeamsPage() {
     try {
       const all = await Team.list('-created_at', 100)
       setTeams(all || [])
-    } catch (err) {
       
+      await auditService.log({
+        action: 'read',
+        entity_type: 'teams',
+        module_name: 'admin',
+        metadata: { count: all?.length || 0 }
+      })
+    } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'read_teams' })
       toastError('Load Failed', 'Failed to load teams')
     } finally {
       setLoading(false)
@@ -102,14 +110,16 @@ export default function AdminTeamsPage() {
       if (editingTeam) {
         await Team.update(editingTeam.id, form)
         success('Updated', 'Team updated')
+        await auditService.logUpdate('teams', editingTeam.id, 'admin', { form })
       } else {
-        await Team.create(form)
+        const newTeam = await Team.create(form)
         success('Created', 'Team created')
+        await auditService.logCreate('teams', newTeam.id, 'admin', { form })
       }
       setShowModal(false)
       fetchData()
     } catch (err) {
-      
+      await auditService.logError(err, 'admin', { action: 'save_team', editing_team_id: editingTeam?.id })
       toastError('Save Failed', `Failed to save team: ${err.message || 'Unknown error'}`)
     }
   }
@@ -119,8 +129,10 @@ export default function AdminTeamsPage() {
     try {
       await Team.delete(id)
       success('Deleted', 'Team deleted')
+      await auditService.logDelete('teams', id, 'admin')
       fetchData()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'delete_team', team_id: id })
       toastError('Delete Failed', 'Failed to delete team')
     }
   }
@@ -129,8 +141,14 @@ export default function AdminTeamsPage() {
     try {
       await Team.update(team.id, { status: 'approved' })
       success('Approved', 'Team approved successfully')
+      await auditService.logUpdate('teams', team.id, 'admin', { 
+        action: 'approve',
+        old_status: team.status,
+        new_status: 'approved' 
+      })
       fetchData()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'approve_team', team_id: team.id })
       toastError('Failed', 'Failed to approve team')
     }
   }
@@ -139,8 +157,14 @@ export default function AdminTeamsPage() {
     try {
       await Team.update(team.id, { status: 'rejected' })
       success('Rejected', 'Team rejected')
+      await auditService.logUpdate('teams', team.id, 'admin', { 
+        action: 'reject',
+        old_status: team.status,
+        new_status: 'rejected' 
+      })
       fetchData()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'reject_team', team_id: team.id })
       toastError('Failed', 'Failed to reject team')
     }
   }
@@ -149,8 +173,13 @@ export default function AdminTeamsPage() {
     try {
       await Team.update(team.id, { auto_approve: !team.auto_approve })
       success(!team.auto_approve ? 'Enabled' : 'Disabled', `Auto-approve ${!team.auto_approve ? 'enabled' : 'disabled'}`)
+      await auditService.logUpdate('teams', team.id, 'admin', { 
+        action: 'toggle_auto_approve',
+        auto_approve: !team.auto_approve 
+      })
       fetchData()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'toggle_auto_approve', team_id: team.id })
       toastError('Failed', 'Failed to update auto-approve setting')
     }
   }
