@@ -6,6 +6,7 @@ import { getPaymentSettings, saveMpesaSettings, saveMollieSettings, saveGeneralP
 import { testMpesaConnection } from '@/services/mpesaService'
 import { testMakamescoConnection } from '@/services/makamescoService'
 import { SubscriptionPackage } from '@/lib/supabaseEntities'
+import { auditService } from '@/services/auditService'
 
 export default function AdminPaymentSettingsPage() {
   const { success, error } = useToast()
@@ -115,8 +116,13 @@ export default function AdminPaymentSettingsPage() {
     try {
       await saveMpesaSettings(mpesaSettings)
       success('Saved', 'M-Pesa settings saved successfully')
+      
+      await auditService.logUpdate('payment_settings', null, 'admin', { 
+        action: 'save_mpesa_settings',
+        provider: 'mpesa'
+      })
     } catch (err) {
-
+      await auditService.logError(err, 'admin', { action: 'save_mpesa_settings' })
       error('Failed', 'Failed to save M-Pesa settings')
     } finally {
       setSaving(false)
@@ -157,8 +163,13 @@ export default function AdminPaymentSettingsPage() {
     try {
       await saveNexusPaySettings(nexusPaySettings)
       success('Saved', 'Nexus Pay settings saved successfully')
+      
+      await auditService.logUpdate('payment_settings', null, 'admin', { 
+        action: 'save_nexus_pay_settings',
+        provider: 'nexus_pay'
+      })
     } catch (err) {
-
+      await auditService.logError(err, 'admin', { action: 'save_nexus_pay_settings' })
       error('Failed', 'Failed to save Nexus Pay settings')
     } finally {
       setSaving(false)
@@ -189,8 +200,12 @@ export default function AdminPaymentSettingsPage() {
     try {
       await saveGeneralPaymentSettings(paymentSettings)
       success('Saved', 'Payment settings saved successfully')
+      
+      await auditService.logUpdate('payment_settings', null, 'admin', { 
+        action: 'save_general_payment_settings'
+      })
     } catch (err) {
-
+      await auditService.logError(err, 'admin', { action: 'save_payment_settings' })
       error('Failed', 'Failed to save payment settings')
     } finally {
       setSaving(false)
