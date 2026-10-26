@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Search, Edit2, Save, X, FileText, Image, Bold, Italic, Underline, List, Link2, Heading } from 'lucide-react'
+import { auditService } from '@/services/auditService'
 
 const STORAGE_KEY = 'smartgigs_cms_pages'
 
@@ -95,13 +96,24 @@ export default function AdminCMSPage() {
           .update({ ...formData, updated_at: new Date().toISOString() })
           .eq('id', editingPage.id)
         if (error) throw error
+        
+        await auditService.logUpdate('cms_pages', editingPage.id, 'admin', { 
+          page_key: editingPage.page_key,
+          title: formData.title 
+        })
       } else {
         const { error } = await supabase
           .from('cms_pages')
           .insert({ page_key: editingPage.page_key, ...formData })
         if (error) throw error
+        
+        await auditService.logCreate('cms_pages', null, 'admin', { 
+          page_key: editingPage.page_key,
+          title: formData.title 
+        })
       }
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'save_cms_page', page_key: editingPage.page_key })
       console.error('Error saving CMS page:', err)
     }
     setEditingPage(null)
