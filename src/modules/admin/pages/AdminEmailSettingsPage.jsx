@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui
 import { Save, Mail, Key, Server, Globe, CheckCircle, AlertTriangle } from 'lucide-react'
 import { EmailSettings } from '@/lib/supabaseEntities'
 import { useToast } from '@/hooks/useToast'
+import { auditService } from '@/services/auditService'
 
 export default function AdminEmailSettingsPage() {
   const { success, error: toastError } = useToast()
@@ -61,13 +62,19 @@ export default function AdminEmailSettingsPage() {
     setSaving(true)
     try {
       const existing = await EmailSettings.list('-created_at', 1)
+      let settingsId
       if (existing && existing.length > 0) {
         await EmailSettings.update(existing[0].id, settings)
+        settingsId = existing[0].id
+        await auditService.logUpdate('email_settings', settingsId, 'admin', { provider: settings.provider })
       } else {
-        await EmailSettings.create(settings)
+        const newSettings = await EmailSettings.create(settings)
+        settingsId = newSettings.id
+        await auditService.logCreate('email_settings', settingsId, 'admin', { provider: settings.provider })
       }
       success('Saved', 'Email settings saved successfully')
     } catch (error) {
+      await auditService.logError(error, 'admin', { action: 'save_email_settings' })
       toastError('Error', 'Failed to save email settings')
     } finally {
       setSaving(false)
