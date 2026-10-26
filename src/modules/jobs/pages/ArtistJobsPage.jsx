@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Job, Project, Application } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
-import { MapPin, DollarSign, Clock, Calendar, Search, Filter, X, Building2, User, ChevronRight, ArrowLeft, Send, FileText, Eye, Star } from 'lucide-react'
+import { MapPin, DollarSign, Clock, Calendar, Search, Filter, X, Building2, User, ChevronRight, ArrowLeft, Send, FileText, Eye, Star, ChevronDown } from 'lucide-react'
 import { formatKES } from '@/data/shopProducts'
 
 export default function ArtistJobsPage() {
@@ -19,6 +19,7 @@ export default function ArtistJobsPage() {
   const [selectedJob, setSelectedJob] = useState(null)
   const [selectedRole, setSelectedRole] = useState(null) // For production role selection
   const [loading, setLoading] = useState(true)
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false) // For dropdown visibility
 
   // Filters
   const [filters, setFilters] = useState({
@@ -192,32 +193,35 @@ export default function ArtistJobsPage() {
     }
   }
 
-  const handleApply = async () => {
-    if (!selectedJob) return
+  const handleApply = async (jobOverride = null, roleOverride = null) => {
+    const jobToApply = jobOverride || selectedJob
+    const roleToApply = roleOverride || selectedRole
+    
+    if (!jobToApply) return
 
     // Confirm which type they're applying to
-    const jobType = selectedJob.type === 'job' ? 'Job' : 'Project'
-    const roleInfo = selectedRole ? `\nRole: ${selectedRole}` : ''
-    if (!window.confirm(`Apply to this ${jobType}?\n\n${selectedJob.title}\n\nType: ${jobType}\nClient: ${selectedJob.client_name}${roleInfo}`)) {
+    const jobType = jobToApply.type === 'job' ? 'Job' : 'Project'
+    const roleInfo = roleToApply ? `\nRole: ${roleToApply}` : ''
+    if (!window.confirm(`Apply to this ${jobType}?\n\n${jobToApply.title}\n\nType: ${jobType}\nClient: ${jobToApply.client_name}${roleInfo}`)) {
       return
     }
 
     try {
       await Application.create({
-        job_id: selectedJob.type === 'job' ? selectedJob.id : null,
-        project_id: selectedJob.type === 'project' ? selectedJob.id : null,
+        job_id: jobToApply.type === 'job' ? jobToApply.id : null,
+        project_id: jobToApply.type === 'project' ? jobToApply.id : null,
         user_id: user.id,
         status: 'pending',
-        cover_letter: selectedRole ? `Applying for role: ${selectedRole}` : '',
+        cover_letter: roleToApply ? `Applying for role: ${roleToApply}` : '',
         media_urls: [],
-        applied_role: selectedRole || null
+        applied_role: roleToApply || null
       })
 
-      success('Applied', `Your application for this ${jobType}${selectedRole ? ` as ${selectedRole}` : ''} has been submitted successfully`)
+      success('Applied', `Your application for this ${jobType}${roleToApply ? ` as ${roleToApply}` : ''} has been submitted successfully`)
 
       // Update the job's has_applied status
       setJobs(prev => prev.map(job =>
-        job.id === selectedJob.id ? { ...job, has_applied: true } : job
+        job.id === jobToApply.id ? { ...job, has_applied: true } : job
       ))
       setSelectedJob(prev => ({ ...prev, has_applied: true }))
       setSelectedRole(null) // Clear selected role after applying
@@ -589,33 +593,79 @@ export default function ArtistJobsPage() {
                       )}
                     </div>
 
-                    {/* Production Roles Selection */}
+                    {/* Production Roles Selection - Dropdown */}
                     {selectedJob.discipline && selectedJob.discipline.length > 0 && (
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-3">Available Roles</h3>
                         <p className="text-sm text-gray-600 mb-4">Select a role to view details and apply:</p>
-                        <div className="space-y-3">
-                          {selectedJob.discipline.map((role, idx) => (
-                            <div
-                              key={idx}
-                              onClick={() => setSelectedRole(role)}
-                              className={`p-4 border rounded-lg cursor-pointer transition-colors ${selectedRole === role ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-                                }`}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <h4 className="font-medium text-gray-900">{role}</h4>
-                                  <p className="text-sm text-gray-600 mt-1">
-                                    {selectedJob.description ?
-                                      selectedJob.description.substring(0, 150) + '...' :
-                                      'Role available for this production'
-                                    }
-                                  </p>
-                                </div>
-                                <ChevronRight className="w-5 h-5 text-gray-400" />
+                        
+                        {/* Dropdown Button */}
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+                            className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                                <User className="w-5 h-5 text-blue-600" />
+                              </div>
+                              <div className="text-left">
+                                <p className="font-medium text-gray-900">
+                                  {selectedRole || 'Select a role'}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {selectedRole ? 'Selected role' : `${selectedJob.discipline.length} roles available`}
+                                </p>
                               </div>
                             </div>
-                          ))}
+                            <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showRoleDropdown ? 'rotate-180' : ''}`} />
+                          </button>
+
+                          {/* Dropdown Content */}
+                          {showRoleDropdown && (
+                            <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                              {selectedJob.discipline.map((role, idx) => (
+                                <div
+                                  key={idx}
+                                  className={`p-4 border-b border-gray-100 last:border-b-0 ${selectedRole === role ? 'bg-blue-50' : ''}`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <button
+                                      onClick={() => {
+                                        setSelectedRole(role)
+                                        setShowRoleDropdown(false)
+                                      }}
+                                      className="flex items-center gap-3 flex-1 text-left"
+                                    >
+                                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                                        <User className="w-4 h-4 text-gray-600" />
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-gray-900">{role}</p>
+                                        <p className="text-xs text-gray-500">
+                                          {selectedJob.description ?
+                                            selectedJob.description.substring(0, 60) + '...' :
+                                            'Role available for this production'
+                                          }
+                                        </p>
+                                      </div>
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setSelectedRole(role)
+                                        setShowRoleDropdown(false)
+                                        handleApply(selectedJob, role)
+                                      }}
+                                      className="ml-3 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                                    >
+                                      Apply
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
