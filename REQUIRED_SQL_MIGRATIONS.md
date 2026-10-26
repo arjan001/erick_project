@@ -58,6 +58,17 @@ Please run these migrations in Supabase SQL Editor in the order listed:
 - Adds module_name for tracking which module action occurred
 - Adds indexes for security monitoring (IP, suspicious activity, severity)
 
+## 10. Create Analytics Tables
+**File:** `database/migrations/create_analytics_tables.sql`
+- Creates live_users table for real-time user tracking
+- Creates user_sessions table for session analytics
+- Creates page_views table for page view tracking
+- Creates error_logs table for application error tracking
+- Creates subscription_analytics table for subscription metrics
+- Sets up RLS policies for admin read access
+- Adds cleanup functions for old data retention
+- Enables real-time analytics dashboard with actual data
+
 ## How to Run:
 1. Go to your Supabase project
 2. Navigate to SQL Editor

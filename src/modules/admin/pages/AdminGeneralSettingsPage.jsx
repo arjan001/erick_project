@@ -4,6 +4,7 @@ import { SystemSetting } from '@/lib/supabaseEntities'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import { Settings, Save, Globe, Bell, Shield, Clock, Users, Database, ToggleLeft, ToggleRight, Layers, ArrowRight, Mail, Send, CheckCircle2, Trash2, RefreshCw } from 'lucide-react'
+import { auditService } from '@/services/auditService'
 
 const DEFAULT_SETTINGS = {
   site_name: 'SmartGigs Kenya',
@@ -132,9 +133,16 @@ export default function AdminGeneralSettingsPage() {
           await SystemSetting.create(setting)
         }
       }
+      
+      // Log audit event for settings update
+      await auditService.logUpdate('system_settings', null, 'admin', {
+        settings_count: settingsToSave.length,
+        keys: settingsToSave.map(s => s.setting_key)
+      })
+      
       success('Saved', 'Settings saved successfully')
     } catch (err) {
-
+      await auditService.logError(err, 'admin', { action: 'save_settings' })
       error('Failed', 'Failed to save settings')
     } finally {
       setSaving(false)
