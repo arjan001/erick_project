@@ -3,6 +3,7 @@ import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import { Package, Search, Plus, Edit, Trash2, DollarSign, Box, Eye, ToggleLeft, ToggleRight, Image as ImageIcon, Tag, MoreVertical, ShoppingCart, Ban, CheckCircle, X } from 'lucide-react'
 import { ShopProduct } from '@/lib/supabaseEntities'
+import { auditService } from '@/services/auditService'
 
 export default function AdminProductsPage() {
   const { success, error } = useToast()
@@ -46,9 +47,17 @@ export default function AdminProductsPage() {
       try {
         const allProducts = await ShopProduct.list('-created_at')
         setProducts(allProducts || [])
+        
+        await auditService.log({
+          action: 'read',
+          entity_type: 'shop_products',
+          module_name: 'admin',
+          metadata: { count: allProducts?.length || 0 }
+        })
       } catch (err) {
         console.error('Error fetching products:', err)
-        setProducts([]) // Set empty array on error
+        setProducts([])
+        await auditService.logError(err, 'admin', { action: 'read_products' })
       } finally {
         setLoading(false)
       }
@@ -76,7 +85,10 @@ export default function AdminProductsPage() {
         auction_end_time: '', auction_target_count: 1000, auction_participants: 0,
         currency: 'KES', fulfillment_type: 'physical',
       })
+      
+      await auditService.logCreate('shop_products', newProduct.id, 'admin', { productForm })
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'create_product' })
       console.error('Error creating product:', err)
       error('Failed', 'Failed to create product')
     }
@@ -87,7 +99,10 @@ export default function AdminProductsPage() {
       await ShopProduct.update(productId, updates)
       setProducts(products.map(p => p.id === productId ? { ...p, ...updates } : p))
       success('Success', 'Product updated successfully')
+      
+      await auditService.logUpdate('shop_products', productId, 'admin', { updates })
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'update_product', product_id: productId })
       console.error('Error updating product:', err)
       error('Failed', 'Failed to update product')
     }
@@ -98,7 +113,10 @@ export default function AdminProductsPage() {
       await ShopProduct.delete(productId)
       setProducts(products.filter(p => p.id !== productId))
       success('Deleted', 'Product deleted successfully')
+      
+      await auditService.logDelete('shop_products', productId, 'admin')
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'delete_product', product_id: productId })
       console.error('Error deleting product:', err)
       error('Failed', 'Failed to delete product')
     }

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Edit2, Trash2, X, Eye, Ban, CheckCircle, AlertCircle, Search, User, Mail, Calendar, MapPin, ChevronLeft, ChevronRight, Phone, Globe, Star, Briefcase, Award, Clock, Link as LinkIcon, FileText, Users } from 'lucide-react'
 import { useToast } from '@/hooks/useToast.jsx'
+import { auditService } from '@/services/auditService'
 
 const STATUS_STYLES = {
   active: 'bg-green-100 text-green-700',
@@ -31,9 +32,17 @@ export default function AdminArtistsPage() {
     try {
       const all = await Artist.list('-created_at', 100)
       setArtists(all || [])
+      
+      await auditService.log({
+        action: 'read',
+        entity_type: 'artists',
+        module_name: 'admin',
+        metadata: { count: all?.length || 0 }
+      })
     } catch (err) {
       console.error('Error fetching artists:', err)
-      setArtists([]) // Set empty array on error instead of showing error
+      setArtists([])
+      await auditService.logError(err, 'admin', { action: 'read_artists' })
     } finally {
       setLoading(false)
     }
@@ -103,14 +112,16 @@ export default function AdminArtistsPage() {
       if (editingArtist) {
         await Artist.update(editingArtist.id, form)
         success('Updated', 'Artist updated')
+        await auditService.logUpdate('artists', editingArtist.id, 'admin', { form })
       } else {
-        await Artist.create(form)
+        const newArtist = await Artist.create(form)
         success('Created', 'Artist created')
+        await auditService.logCreate('artists', newArtist.id, 'admin', { form })
       }
       setShowModal(false)
       fetchData()
     } catch (err) {
-
+      await auditService.logError(err, 'admin', { action: 'save_artist', editing_artist_id: editingArtist?.id })
       toastError('Save Failed', `Failed to save artist: ${err.message || 'Unknown error'}`)
     }
   }
@@ -120,8 +131,10 @@ export default function AdminArtistsPage() {
     try {
       await Artist.delete(id)
       success('Deleted', 'Artist deleted')
+      await auditService.logDelete('artists', id, 'admin')
       fetchData()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'delete_artist', artist_id: id })
       toastError('Delete Failed', 'Failed to delete artist')
     }
   }
@@ -130,8 +143,13 @@ export default function AdminArtistsPage() {
     try {
       await Artist.update(artist.id, { is_suspended: !artist.is_suspended })
       success(!artist.is_suspended ? 'Suspended' : 'Unsuspended', `Artist ${!artist.is_suspended ? 'suspended' : 'unsuspended'}`)
+      await auditService.logUpdate('artists', artist.id, 'admin', { 
+        action: 'toggle_suspend',
+        is_suspended: !artist.is_suspended 
+      })
       fetchData()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'toggle_suspend', artist_id: artist.id })
       toastError('Failed', 'Failed to update suspension status')
     }
   }

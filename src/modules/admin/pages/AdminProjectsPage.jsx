@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FolderKanban, Search, Eye, Trash2, DollarSign, CheckCircle, XCircle, TrendingUp, X, Plus, Building2, FileText, Film, ChevronLeft, ChevronRight, MapPin, Calendar, Clock, Users, Tag, Star, Flame, Sparkles } from 'lucide-react'
+import { auditService } from '@/services/auditService'
 
 const STATUSES = ['submitted', 'verified', 'in_progress', 'delivered', 'rejected']
 
@@ -42,9 +43,17 @@ export default function AdminProjectsPage() {
       setLoading(true)
       const rows = await Project.list('-created_date')
       setProjects(rows || [])
+      
+      await auditService.log({
+        action: 'read',
+        entity_type: 'projects',
+        module_name: 'admin',
+        metadata: { count: rows?.length || 0 }
+      })
     } catch (err) {
       console.error('Error fetching projects:', err)
       setProjects([])
+      await auditService.logError(err, 'admin', { action: 'read_projects' })
     } finally {
       setLoading(false)
     }
@@ -58,12 +67,12 @@ export default function AdminProjectsPage() {
       await Project.delete(projectId)
       setProjects(prev => prev.filter(p => p.id !== projectId))
       success('Deleted', 'Project deleted successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'project.delete', entity_type: 'Project', entity_id: projectId, details: 'Deleted project' }).catch(err => {
-        console.error('Failed to create audit log:', err)
-      })
+      
+      await auditService.logDelete('projects', projectId, 'admin')
     } catch (err) {
       console.error('Error deleting project:', err)
       error('Failed', 'Failed to delete project')
+      await auditService.logError(err, 'admin', { action: 'delete_project', project_id: projectId })
     }
   }
 
@@ -92,10 +101,10 @@ export default function AdminProjectsPage() {
         status: 'submitted'
       })
       success('Created', 'Project created successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'project.create', entity_type: 'Project', entity_id: newProject.id, details: 'Created project' }).catch(err => {
-        console.error('Failed to create audit log:', err)
-      })
+      
+      await auditService.logCreate('projects', newProject.id, 'admin', { createForm })
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'create_project' })
       console.error('Error creating project:', err)
       error('Failed', 'Failed to create project')
     }
@@ -107,10 +116,14 @@ export default function AdminProjectsPage() {
       await Project.update(projectId, { status: newStatus })
       setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: newStatus } : p))
       success('Updated', 'Project status updated successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'project.status_update', entity_type: 'Project', entity_id: projectId, details: `Changed status to ${newStatus}` }).catch(err => {
-        console.error('Failed to create audit log:', err)
+      
+      await auditService.logUpdate('projects', projectId, 'admin', { 
+        action: 'update_status',
+        old_status: currentStatus,
+        new_status: newStatus 
       })
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'update_status', project_id: projectId })
       console.error('Error updating project status:', err)
       error('Failed', 'Failed to update project status')
     }

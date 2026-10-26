@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Briefcase, Search, Eye, Trash2, Calendar, MapPin, CheckCircle, XCircle, X, ChevronLeft, ChevronRight, Users, Star } from 'lucide-react'
+import { auditService } from '@/services/auditService'
 
 const STATUSES = ['draft', 'pending_approval', 'open', 'closed', 'filled']
 
@@ -38,9 +39,17 @@ export default function AdminJobsPage() {
       setLoading(true)
       const rows = await Job.list('-created_at')
       setJobs(rows || [])
+      
+      await auditService.log({
+        action: 'read',
+        entity_type: 'jobs',
+        module_name: 'admin',
+        metadata: { count: rows?.length || 0 }
+      })
     } catch (err) {
       console.error('Error fetching jobs:', err)
       setJobs([])
+      await auditService.logError(err, 'admin', { action: 'read_jobs' })
     } finally {
       setLoading(false)
     }
@@ -54,12 +63,12 @@ export default function AdminJobsPage() {
       await Job.delete(jobId)
       setJobs(prev => prev.filter(j => j.id !== jobId))
       success('Deleted', 'Job deleted successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'job.delete', entity_type: 'Job', entity_id: jobId, details: 'Deleted job' }).catch(err => {
-        console.error('Failed to create audit log:', err)
-      })
+      
+      await auditService.logDelete('jobs', jobId, 'admin', { action: 'delete_job' })
     } catch (err) {
       console.error('Error deleting job:', err)
       error('Failed', 'Failed to delete job')
+      await auditService.logError(err, 'admin', { action: 'delete_job', job_id: jobId })
     }
   }
 
@@ -69,12 +78,15 @@ export default function AdminJobsPage() {
       setJobs(prev => prev.map(j => j.id === jobId ? { ...j, is_featured: !currentFeatured } : j))
       const message = !currentFeatured ? 'Job marked as featured' : 'Job removed from featured'
       success('Updated', message)
-      AuditLog.create({ actor_email: user?.email, action: 'job.featured_toggle', entity_type: 'Job', entity_id: jobId, details: `Featured set to ${!currentFeatured}` }).catch(err => {
-        console.error('Failed to create audit log:', err)
+      
+      await auditService.logUpdate('jobs', jobId, 'admin', { 
+        action: 'toggle_featured',
+        is_featured: !currentFeatured 
       })
     } catch (err) {
       console.error('Error toggling featured:', err)
       error('Failed', 'Failed to toggle featured status')
+      await auditService.logError(err, 'admin', { action: 'toggle_featured', job_id: jobId })
     }
   }
 
@@ -93,12 +105,16 @@ export default function AdminJobsPage() {
       setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: newStatus } : j))
       const message = currentStatus === 'pending_approval' ? 'Job approved and is now live' : 'Job status updated successfully'
       success('Updated', message)
-      AuditLog.create({ actor_email: user?.email, action: 'job.status_update', entity_type: 'Job', entity_id: jobId, details: `Changed status to ${newStatus}` }).catch(err => {
-        console.error('Failed to create audit log:', err)
+      
+      await auditService.logUpdate('jobs', jobId, 'admin', { 
+        action: 'update_status',
+        old_status: currentStatus,
+        new_status: newStatus 
       })
     } catch (err) {
       console.error('Error updating job status:', err)
       error('Failed', 'Failed to update job status')
+      await auditService.logError(err, 'admin', { action: 'update_status', job_id: jobId })
     }
   }
 
