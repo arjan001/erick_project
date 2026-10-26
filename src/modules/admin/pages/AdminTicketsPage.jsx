@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import DataTable from '@/components/admin/DataTable'
 import { Ticket, Search, Filter, Plus, X, CheckCircle, Clock, AlertCircle, Ban, User, Eye, Trash2, MessageSquare } from 'lucide-react'
 import notificationService from '@/shared/services/notificationService'
+import { auditService } from '@/services/auditService'
 
 const STATUS_CONFIG = {
   open: { label: 'Open', color: 'bg-blue-100 text-blue-800', icon: Clock },
@@ -49,7 +50,15 @@ export default function AdminTicketsPage() {
 
       if (err) throw err
       setTickets(data || [])
+      
+      await auditService.log({
+        action: 'read',
+        entity_type: 'support_tickets',
+        module_name: 'admin',
+        metadata: { count: data?.length || 0 }
+      })
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'read_tickets' })
       console.error('Error fetching tickets:', err)
       error('Error', 'Failed to load tickets')
     } finally {
@@ -70,7 +79,13 @@ export default function AdminTicketsPage() {
 
       setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus } : t))
       success('Updated', 'Ticket status updated')
+      
+      await auditService.logUpdate('support_tickets', ticketId, 'admin', { 
+        action: 'update_status',
+        new_status: newStatus 
+      })
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'update_ticket_status', ticket_id: ticketId })
       console.error('Error updating status:', err)
       error('Failed', 'Failed to update ticket status')
     }
@@ -88,7 +103,10 @@ export default function AdminTicketsPage() {
 
       setTickets(prev => prev.filter(t => t.id !== ticketId))
       success('Deleted', 'Ticket deleted successfully')
+      
+      await auditService.logDelete('support_tickets', ticketId, 'admin')
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'delete_ticket', ticket_id: ticketId })
       console.error('Error deleting ticket:', err)
       error('Failed', 'Failed to delete ticket')
     }
