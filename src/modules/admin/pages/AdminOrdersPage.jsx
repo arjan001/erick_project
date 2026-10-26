@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ShoppingCart, Search, Eye, Package, Truck, CheckCircle, XCircle, Clock, DollarSign, User, Calendar, Download, FileText } from 'lucide-react'
 import DataTable from '@/components/admin/DataTable'
+import { auditService } from '@/services/auditService'
 
 export default function AdminOrdersPage() {
   const { success, error } = useToast()
@@ -31,7 +32,15 @@ export default function AdminOrdersPage() {
 
         const data = await response.json()
         setOrders(data || [])
+        
+        await auditService.log({
+          action: 'read',
+          entity_type: 'shop_orders',
+          module_name: 'admin',
+          metadata: { count: data?.length || 0 }
+        })
       } catch (err) {
+        await auditService.logError(err, 'admin', { action: 'read_orders' })
         console.error('Error fetching orders:', err)
         error('Failed', 'Failed to load orders')
         setOrders([])
