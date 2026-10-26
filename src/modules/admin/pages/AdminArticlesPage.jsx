@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Plus, Edit2, Trash2, X, Eye, EyeOff, ArrowUp, ArrowDown, Calendar, User } from 'lucide-react'
 import { useToast } from '@/hooks/useToast.jsx'
 import DataTable from '@/components/admin/DataTable'
+import { auditService } from '@/services/auditService'
 
 export default function AdminArticlesPage() {
   const { success, error: toastError } = useToast()
@@ -41,7 +42,15 @@ export default function AdminArticlesPage() {
 
       if (error) throw error
       setArticles(data || [])
+      
+      await auditService.log({
+        action: 'read',
+        entity_type: 'articles',
+        module_name: 'admin',
+        metadata: { count: data?.length || 0 }
+      })
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'read_articles' })
       console.error('Error fetching articles:', err)
       toastError('Load Failed', 'Failed to load articles')
     } finally {
@@ -112,12 +121,24 @@ export default function AdminArticlesPage() {
           .eq('id', editingArticle.id)
         if (error) throw error
         success('Updated', 'Article updated')
+        
+        await auditService.logUpdate('articles', editingArticle.id, 'admin', { 
+          title: form.title,
+          status: form.status 
+        })
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('articles')
           .insert(dataToSave)
+          .select()
+          .single()
         if (error) throw error
         success('Created', 'Article created')
+        
+        await auditService.logCreate('articles', data.id, 'admin', { 
+          title: form.title,
+          status: form.status 
+        })
       }
       setShowModal(false)
       fetchArticles()
@@ -136,8 +157,11 @@ export default function AdminArticlesPage() {
         .eq('id', id)
       if (error) throw error
       success('Deleted', 'Article deleted')
+      
+      await auditService.logDelete('articles', id, 'admin')
       fetchArticles()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'delete_article', article_id: id })
       console.error('Error deleting article:', err)
       toastError('Delete Failed', 'Failed to delete article')
     }
