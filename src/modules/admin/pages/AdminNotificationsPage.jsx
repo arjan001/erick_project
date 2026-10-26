@@ -4,7 +4,7 @@ import { Notification } from '@/lib/supabaseEntities'
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/lib/AuthContext'
 import { Button } from '@/components/ui/button'
-import { Bell, Check, X, Briefcase, MessageCircle, Users, Award, ThumbsUp, Clock, Filter, CreditCard, UserCheck, MessageSquare, Heart, Star, Ticket, Zap, CheckCheck, LayoutDashboard } from 'lucide-react'
+import { Bell, Check, X, Briefcase, MessageCircle, Users, Award, ThumbsUp, Clock, Filter, CreditCard, UserCheck, MessageSquare, Heart, Star, Ticket, Zap, CheckCheck, LayoutDashboard, Trash2, RotateCcw } from 'lucide-react'
 import realtimeMessagingService from '@/services/realtimeMessagingService'
 
 export default function AdminNotificationsPage() {
@@ -108,6 +108,25 @@ export default function AdminNotificationsPage() {
     }
   }
 
+  const handleRefresh = async () => {
+    await fetchNotifications()
+    success('Refreshed', 'Notifications refreshed')
+  }
+
+  const handleClearAll = async () => {
+    if (!window.confirm('Are you sure you want to delete ALL notifications? This cannot be undone.')) return
+    try {
+      await Promise.all(
+        notifications.map(n => Notification.delete(n.id))
+      )
+      setNotifications([])
+      success('Cleared', 'All notifications deleted')
+    } catch (err) {
+      console.error('Error clearing all:', err)
+      error('Failed', 'Failed to clear all notifications')
+    }
+  }
+
   const handleAction = async (notification) => {
     await handleMarkAsRead(notification.id)
 
@@ -205,6 +224,10 @@ export default function AdminNotificationsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleRefresh} className="flex items-center gap-1">
+            <RotateCcw className="w-3 h-3" />
+            Refresh
+          </Button>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
@@ -223,6 +246,12 @@ export default function AdminNotificationsPage() {
             <Button variant="outline" size="sm" onClick={handleDeleteAllRead} className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:border-red-300">
               <X className="w-3 h-3" />
               Clear Read
+            </Button>
+          )}
+          {notifications.length > 0 && (
+            <Button variant="outline" size="sm" onClick={handleClearAll} className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:border-red-300">
+              <Trash2 className="w-3 h-3" />
+              Clear All
             </Button>
           )}
         </div>
