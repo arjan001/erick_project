@@ -44,6 +44,20 @@ Please run these migrations in Supabase SQL Editor in the order listed:
 - Includes default settings for site, registration, content, notifications, security, subscription, and maintenance
 - Fixes 404 error in AdminGeneralSettingsPage
 
+## 8. Add Ticket Email Notifications
+**File:** `database/migrations/add_ticket_email_notifications.sql`
+- Adds email_notification_sent and last_email_sent_at columns to support_tickets
+- Enables tracking of email notifications sent for tickets
+- Prevents duplicate email sends
+
+## 9. Enhance Audit Logs
+**File:** `database/migrations/enhance_audit_logs.sql`
+- Adds IP address, user agent, page path tracking to audit_logs
+- Adds is_suspicious flag for security monitoring
+- Adds severity level (info, warning, error, critical)
+- Adds module_name for tracking which module action occurred
+- Adds indexes for security monitoring (IP, suspicious activity, severity)
+
 ## How to Run:
 1. Go to your Supabase project
 2. Navigate to SQL Editor
