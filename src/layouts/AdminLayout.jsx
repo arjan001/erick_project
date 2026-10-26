@@ -38,7 +38,7 @@ const navItems = [
   { path: '/Admin/Analytics', label: 'Analytics Dashboard', icon: BarChart3 },
   { path: '/Admin/FinanceDashboard', label: 'Finance Dashboard', icon: DollarSign },
   { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: FileText },
-  { path: '/Admin/SuccessStories', label: 'Success Stories', icon: Trophy },
+  { path: '/Admin/SuccessStories', label: 'Success Stories', icon: Trophy, disabled: true },
   { path: '/Admin/RecentProjects', label: 'Recent Projects', icon: Clock },
 ]
 
@@ -49,7 +49,7 @@ const navGroups = [
   { label: 'Shop', items: ['/Admin/Products', '/Admin/Orders', '/Admin/CardPayments', '/Admin/ShopSettings', '/Admin/Partners'] },
   { label: 'Communication', items: ['/Admin/Newsletter', '/Admin/MailingList', '/Admin/Messages', '/Admin/Tickets'] },
   { label: 'Content & Integrations', items: ['/Admin/CMS', '/Admin/SEOCMS', '/Admin/ImageStorage', '/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
-  { label: 'System', items: ['/Admin/GeneralSettings', '/Admin/Analytics', '/Admin/FinanceDashboard', '/Admin/AuditLogs', '/Admin/SuccessStories', '/Admin/RecentProjects'] },
+  { label: 'System', items: ['/Admin/GeneralSettings', '/Admin/Analytics', '/Admin/FinanceDashboard', '/Admin/AuditLogs', '/Admin/RecentProjects'] },
 ]
 
 export default function AdminLayout({ children }) {
