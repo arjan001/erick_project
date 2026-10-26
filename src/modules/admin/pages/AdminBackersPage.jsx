@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Edit2, Trash2, X, Eye, Ban, CheckCircle, AlertCircle, Search, User, Mail, Calendar, MapPin, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useToast } from '@/hooks/useToast.jsx'
+import { auditService } from '@/services/auditService'
 
 const STATUS_STYLES = {
   active: 'bg-green-100 text-green-700 border-green-200',
@@ -31,8 +32,15 @@ export default function AdminBackersPage() {
     try {
       const all = await Backer.list('-created_at', 100)
       setBackers(all || [])
-    } catch (err) {
       
+      await auditService.log({
+        action: 'read',
+        entity_type: 'backers',
+        module_name: 'admin',
+        metadata: { count: all?.length || 0 }
+      })
+    } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'read_backers' })
       toastError('Load Failed', 'Failed to load backers')
     } finally {
       setLoading(false)
@@ -94,14 +102,16 @@ export default function AdminBackersPage() {
       if (editingBacker) {
         await Backer.update(editingBacker.id, form)
         success('Updated', 'Backer updated')
+        await auditService.logUpdate('backers', editingBacker.id, 'admin', { form })
       } else {
-        await Backer.create(form)
+        const newBacker = await Backer.create(form)
         success('Created', 'Backer created')
+        await auditService.logCreate('backers', newBacker.id, 'admin', { form })
       }
       setShowModal(false)
       fetchData()
     } catch (err) {
-      
+      await auditService.logError(err, 'admin', { action: 'save_backer', editing_backer_id: editingBacker?.id })
       toastError('Save Failed', `Failed to save backer: ${err.message || 'Unknown error'}`)
     }
   }
@@ -111,8 +121,10 @@ export default function AdminBackersPage() {
     try {
       await Backer.delete(id)
       success('Deleted', 'Backer deleted')
+      await auditService.logDelete('backers', id, 'admin')
       fetchData()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'delete_backer', backer_id: id })
       toastError('Delete Failed', 'Failed to delete backer')
     }
   }
@@ -121,8 +133,13 @@ export default function AdminBackersPage() {
     try {
       await Backer.update(backer.id, { is_suspended: !backer.is_suspended })
       success(!backer.is_suspended ? 'Suspended' : 'Unsuspended', `Backer ${!backer.is_suspended ? 'suspended' : 'unsuspended'}`)
+      await auditService.logUpdate('backers', backer.id, 'admin', { 
+        action: 'toggle_suspend',
+        is_suspended: !backer.is_suspended 
+      })
       fetchData()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'toggle_suspend', backer_id: backer.id })
       toastError('Failed', 'Failed to update suspension status')
     }
   }
@@ -131,8 +148,13 @@ export default function AdminBackersPage() {
     try {
       await Backer.update(backer.id, { is_disabled: !backer.is_disabled })
       success(!backer.is_disabled ? 'Disabled' : 'Enabled', `Backer ${!backer.is_disabled ? 'disabled' : 'enabled'}`)
+      await auditService.logUpdate('backers', backer.id, 'admin', { 
+        action: 'toggle_disable',
+        is_disabled: !backer.is_disabled 
+      })
       fetchData()
     } catch (err) {
+      await auditService.logError(err, 'admin', { action: 'toggle_disable', backer_id: backer.id })
       toastError('Failed', 'Failed to update disabled status')
     }
   }
